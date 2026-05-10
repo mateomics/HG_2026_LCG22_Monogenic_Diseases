@@ -1,0 +1,109 @@
+---
+format:
+  pdf:
+    output-file: ProyectoFinal_Escrito_Equipo1.pdf
+    documentclass: article
+    toc: false
+    number-sections: true
+    keep-tex: true
+    latex-engine: xelatex
+    fig-cap-location: bottom
+    include-before-body: ./docs/cover.tex
+    include-in-header:
+      text: |
+        \usepackage{ragged2e}
+        \usepackage{indentfirst}
+        \usepackage{float}
+        \usepackage{graphicx}
+        \usepackage{setspace}
+
+        % Interlineado 1.5
+        \onehalfspacing
+
+        % Sangría
+        \setlength{\parindent}{1.25em}
+
+        % Sin espacio entre párrafos
+        \setlength{\parskip}{0pt}
+
+        % Texto justificado
+        \justifying
+
+        % Figuras en posición fija
+        \floatplacement{figure}{H}
+
+        % Leyendas estilo "Figura 1:"
+        \renewcommand{\figurename}{Figura}
+
+fontsize: 11pt
+mainfont: Verdana
+
+geometry:
+  - margin=1in
+
+indent: true
+
+% Fuentes
+bibliography: ./docs/references.bib
+csl: ./docs/nlm-citation-sequence-brackets.csl
+
+% Configuración global de chunks
+execute:
+  echo: false
+  eval: true
+  warning: false
+  message: false
+
+editor: visual
+---
+
+---
+
+# Tutorial
+> Para Andrea y Zyanya, cuando lo nreguemos quitaos esta parte jeje
+
+## Citas
+Para citar un artículo, libro o cualquier fuente, pueden agregar la referencia en formato `BibTex` en el archivo `./docs/references.bib` y usar la sintaxis [@cite] en el texto (e.g: si tienen una referencia con la clave `Smith2020`, se cita: "Según @Smith2020, el método es efectivo...") y al renderizar ya estará en el formato que nos pidieron.
+
+## Chunks de código
+En esencia son como los de *Rmarkdown*:
+
+- Para nombrarlos
+  - `{<lenguaje> < nombre del chunk>}`
+
+- Por default se ejecutan pero no se muestran, si se quiere cambiar esto al inicio del chunk pongan:
+  - `#| echo: true` para mostrar el código
+  - `#| eval: false` para no ejecutar el código
+
+- Para pies de figura, al inicio del chunk pongan:
+  - `#| label: etiqueta_de_la_figura`
+  - `#| fig-cap: "Texto de la leyenda"`
+
+$\rightarrow$ Ejemplo:
+
+```{r ejemplo}
+#| echo: true
+#| label: fig:ejemplo
+#| fig-cap: "Ejemplo de chunk"
+
+# Y este ya es el código
+plot(1:10, 1:10)
+```
+
+## Sangría, interlineado y justificación
+
+Ya está configurado en el yaml de LaTeX para que el texto tenga sangría, interlineado de 1.5 y esté justificado.
+
+> Cada párrafo empiécenlo con `\n` y sin `\t`, el renderizado se encarga ;)
+
+---
+
+# Introducción
+
+# Objetivo
+
+# Metodología
+
+# Resultados y discusión
+
+# Referencias
