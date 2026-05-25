@@ -1,12 +1,19 @@
 ---
+lang: es
+
+crossref:
+  fig-title: "Figura"
+  tbl-title: "Tabla"
+
+engine: knitr
+
 format:
   pdf:
-    output-file: ProyectoFinal_Escrito_Equipo1.pdf
+    output-file: ProyectoFinal_Escrito_Equipo4.pdf
     documentclass: article
     toc: false
     number-sections: true
     keep-tex: true
-    latex-engine: xelatex
     fig-cap-location: bottom
     include-before-body: ./docs/cover.tex
     include-in-header:
@@ -34,6 +41,7 @@ format:
 
         % Leyendas estilo "Figura 1:"
         \renewcommand{\figurename}{Figura}
+        \renewcommand{\tablename}{Tabla}
 
 fontsize: 11pt
 mainfont: Verdana
@@ -43,11 +51,9 @@ geometry:
 
 indent: true
 
-% Fuentes
 bibliography: ./docs/references.bib
-csl: ./docs/nlm-citation-sequence-brackets.csl
+csl: ./docs/vancouver-nlm.csl
 
-% Configuración global de chunks
 execute:
   echo: false
   eval: true
@@ -57,53 +63,799 @@ execute:
 editor: visual
 ---
 
----
-
-# Tutorial
-> Para Andrea y Zyanya, cuando lo nreguemos quitaos esta parte jeje
-
-## Citas
-Para citar un artículo, libro o cualquier fuente, pueden agregar la referencia en formato `BibTex` en el archivo `./docs/references.bib` y usar la sintaxis [@cite] en el texto (e.g: si tienen una referencia con la clave `Smith2020`, se cita: "Según @Smith2020, el método es efectivo...") y al renderizar ya estará en el formato que nos pidieron.
-
-## Chunks de código
-En esencia son como los de *Rmarkdown*:
-
-- Para nombrarlos
-  - `{<lenguaje> < nombre del chunk>}`
-
-- Por default se ejecutan pero no se muestran, si se quiere cambiar esto al inicio del chunk pongan:
-  - `#| echo: true` para mostrar el código
-  - `#| eval: false` para no ejecutar el código
-
-- Para pies de figura, al inicio del chunk pongan:
-  - `#| label: etiqueta_de_la_figura`
-  - `#| fig-cap: "Texto de la leyenda"`
-
-$\rightarrow$ Ejemplo:
-
-```{r ejemplo}
-#| echo: true
-#| label: fig:ejemplo
-#| fig-cap: "Ejemplo de chunk"
-
-# Y este ya es el código
-plot(1:10, 1:10)
+```{r Setup de Python}
+#| echo: false
+#| message: false
+#| warning: false
+#| include: false
+library(reticulate)
+use_condaenv("py-sci", required = TRUE)
+py_config()
 ```
 
-## Sangría, interlineado y justificación
+```{python Librerías de python}
+import pandas as pd
+```
 
-Ya está configurado en el yaml de LaTeX para que el texto tenga sangría, interlineado de 1.5 y esté justificado.
-
-> Cada párrafo empiécenlo con `\n` y sin `\t`, el renderizado se encarga ;)
-
----
+```{r Librerías de R}
+library(tidyverse)
+library(cowplot)
+```
 
 # Introducción
 
+Las **enfermedades mendelianas** son trastornos genéticos causados principalmente por variantes de alta penetrancia que afectan genes individuales [CITA PENDIENTE]. Muchas de estas variantes producen alteraciones severas en la función proteica, incluyendo codones de paro prematuros, cambios en el marco de lectura (*frameshift*) y alteraciones en el procesamiento del RNA [CITA PENDIENTE].
+
+Actualmente, existen bases de datos clínicas como [ClinVar](https://www.ncbi.nlm.nih.gov/clinvar/){.underline}, que permiten obtener tanto variantes humanas asociadas a enfermedades hereditarias, como información sobre su relevancia clínica y genes implicados. Asimismo, recursos como [OMIM](https://www.omim.org){.underline} posibilitan la identificación de enfermedades mendelianas y sus genes asociados.
+
+El análisis bioinformático de este tipo de variantes permite estudiar su distribución en el genoma y predecir sus posibles consecuencias a nivel molecular o incluso fenotípico mediante herramientas de anotación funcional [IDEALMENTE CITA].
+
+De esta forma, este proyecto realiza el filtrado y anotación funcional de aquellas variantes patogénicas asociadas a enfermedades mendelianas humanas, utilizando información de ClinVar y OMIM, así como herramientas de análisis genómico [QUÉ HERRAMIENTAS?].
+
+[POSIBLEMENTE AGREGAR INFORMACIÓN SOBRE LA IMPORTANCIA DE ESTE TIPO DE ANÁLISIS EN EL CONTEXTO DE LA GENÓMICA HUMANA Y LA MEDICINA PERSONALIZADA CON SUS RESPECTIVAS CITAS]
+
 # Objetivo
+
+Identificar y anotar funcionalmente variantes patogénicas humanas asociadas a enfermedades mendelianas a partir de datos de ClinVar y OMIM, con el fin de caracterizar sus efectos y analizar su distribución genómica.
 
 # Metodología
 
+## Obtención de variantes clínicas
+
+Se descargó el archivo [`./data/raw/clinvar.vcf.gz`](https://www.ncbi.nlm.nih.gov/clinvar/docs/downloads/), un VCF (*Variant Call Format*) de variantes en humano, desde la base de datos de ClinVar. Se utiliza el ensamblaje de referencia GRCh38 (Hg38), correspondiente al último *release* oficial disponible al momento del análisis. 
+
+El archivo contiene información sobre la relevancia clínica de cada variante en el campo `INFO`, clasificándolas en función del nivel de evidencia disponible para su asociación con alguna enfermedad. Entre las categorías reportadas se incluyen: `VUS` (Variant of Uncertain Significance), de significancia incierta; `Likely pathogenic`, de moderada; y `Pathogenic`, de alta [@landrum-2013].
+
+Por lo anterior y buscando reducir el error tipo I (falsos positivos) en análisis posteriores, se optó por extraer únicamente las variantes clasificadas como *Pathogenic*.
+
+## Filtrado de variantes mendelianas
+
+A partir de la información clínica contenida en ClinVar y OMIM, se identificaron aquellas variantes patogénicas asociadas específicamente a enfermedades mendelianas humanas mediante la presencia de identificadores `OMIM` en las anotaciones clínicas.
+
+Las variantes filtradas fueron almacenadas en un archivo tabular y posteriormente en un VCF, formato compatible con las herramientas de anotación funcional a utilizar.
+
+El conjunto final estuvo compuesto por 122,211 variantes mendelianas únicas clasificadas como patogénicas.
+
+## Anotación y clasificación funcional de variantes
+
+La anotación funcional de las variantes se realizó utilizando el *software* [`SnpEff`](https://pcingola.github.io/SnpEff/){.underline}, herramienta utilizada para predecir el efecto de variantes genéticas sobre genes y transcritos. Las variantes fueron clasificadas según su impacto funcional en categorías `HIGH` (alto), `MODERATE` (moderado), `LOW` (bajo) y `MODIFIER` (no codificante o indirecto), permitiendo identificar aquellas con mayor probabilidad de afectar la función proteica [@cingolani-2012].
+
+Debido a que una misma variante puede afectar múltiples transcritos (por *splicing*, diversidad de promotores, etc...), el análisis se realizó considerando variantes únicas en aras de evitar potenciales redundancias en el conteo de las mismas. De esta forma, las variantes fueron agrupadas en función de su posición genómica y alelos de referencia/alternativos (`CHROM`, `POS`, `REF`, `ALT`).
+
+En aquellos casos con una misma variante asociada a distintas anotaciones funcionales, se conservó aquella correspondiente al mayor impacto funcional reportado por `SnpEff` *inter-categoría* (`HIGH` > `MODERATE` > `LOW` > `MODIFIER`) y al efecto molecular más severo anotado *intra-categoría*, siguiendo el siguiente orden, de forma descendente:
+
+- `stop_gained`: Introducción de un codón de paro prematuro.
+
+- `frameshift_variant`: Alteración del marco de lectura por un *indel*.
+
+- `splice_acceptor_variant`/`splice_donor_variant`: Alteración en el sitio aceptor/donador de splicing.
+
+- `missense_variant`: Cambio de un aminoácido por otro.
+
+- `synonymous_variant`: Cambio de un codón sin alterar el aminoácido.
+
+- `intron_variant`: Alteración en una región intrónica.
+
+- `upstream_gene_variant`: Alteración en una región *upstream* del gen.
+
+- `downstream_gene_variant`: Alteración en una región *downstream* del gen.
+
+Posteriormente, las variantes fueron agrupadas en categorías generales según la ubicación asociada a su efecto molecular, permitiendo evaluar su distribución en el genoma humano:
+
+| Región              | Efectos                                                                 |
+|---------------------|--------------------------------------------------------------------------|
+| Coding              | missense_variant, synonymous_variant, stop_gained, frameshift_variant, stop_lost, start_lost, protein_altering_variant, coding_sequence_variant |
+| Intronic            | intron_variant                                                                 |
+| Intergenic/Regulatory | intergenic_region, upstream_gene_variant, downstream_gene_variant |
+| UTR                 | 3_prime_UTR, 5_prime_UTR                                                   |
+| Splicing            | splice_acceptor/donor/region                                                   |
+| Other               | demás                                                                 |
+
+> Tabla 1. Clasificación de variantes según su ubicación genómica y efectos moleculares asociados.
+
+```{python Parseo de anotaciones SnpEff}
+#| eval: false
+
+input_vcf = "results/mendelian_annotated.vcf"
+output_tsv = "data/processed/snpeff_annotations.tsv"
+
+records = []
+
+with open(input_vcf) as f:
+  for line in f:
+    if line.startswith("#"):
+      continue
+    # Parsear campos básicos
+    cols = line.strip().split("\t")
+    chrom = cols[0]
+    pos = cols[1]
+    ref = cols[3]
+    alt = cols[4]
+    info = cols[7]
+
+    # Extraer anotaciones SnpEff
+    ann_field = None
+    for item in info.split(";"):
+      if item.startswith("ANN="): # SnpEff anota en el campo ANN
+        ann_field = item.replace("ANN=", "")
+        break
+
+    if ann_field is None:
+      continue
+    # Parsear anotaciones múltiples
+    annotations = ann_field.split(",")
+    for ann in annotations:
+      ann_parts = ann.split("|")
+      # Asegurar que hay suficientes campos
+      if len(ann_parts) < 5:
+        continue
+      allele = ann_parts[0]
+      effect = ann_parts[1]
+      impact = ann_parts[2]
+      gene = ann_parts[3]
+      records.append({
+        "CHROM": chrom,
+        "POS": pos,
+        "REF": ref,
+        "ALT": alt,
+        "GENE": gene,
+        "EFFECT": effect,
+        "IMPACT": impact
+      })
+
+df = pd.DataFrame(records)
+
+df.to_csv(output_tsv, sep="\t", index=False)
+
+print(df.head())
+print("\nTotal annotations:", len(df))
+```
+
+```{python Limpieza y clasificación de anotaciones + Tabla distribución por región}
+#| eval: false
+
+# Leer anotaciones SnpEff
+df = pd.read_csv(
+  "./data/processed/snpeff_annotations.tsv", 
+  sep="\t", dtype={"CHROM": str}, low_memory=False)
+
+# Jerarquía de impacto
+impact_priority = {
+  "HIGH": 1,
+  "MODERATE": 2,
+  "LOW": 3,
+  "MODIFIER": 4
+}
+
+# Col. para ordenar
+df["impact_rank"] = df["IMPACT"].map(impact_priority)
+
+# Separar múltiples efectos
+df["EFFECT"] = df["EFFECT"].str.strip().str.split("&") # SnpEff usa "&" como delimitador en efectos
+df = df.explode("EFFECT").copy() # Cada fila con un efecto diferente
+
+# Set de efectos de cada región
+# Regiones codificantes
+coding_effects = {
+  "missense_variant",
+  "synonymous_variant",
+  "stop_gained",
+  "frameshift_variant",
+  "stop_lost",
+  "start_lost",
+  "protein_altering_variant",
+  "coding_sequence_variant"
+}
+
+# Regiones no codificantes
+utr_effects = {"3_prime_UTR_variant", "5_prime_UTR_variant"}
+
+# Regiones intrónicas
+intronic_effects = {"intron_variant"}
+
+# Splicing
+splicing_effects = {
+  "splice_acceptor_variant",
+  "splice_donor_variant",
+  "splice_region_variant"
+}
+
+# Intergénicas y regulatorias
+intergenic_effects = {
+  "intergenic_region",
+  "upstream_gene_variant",
+  "downstream_gene_variant"
+}
+
+# Clasificar cada efecto en una región genómica
+def classify_region(effect):
+  if effect in coding_effects:
+    return "Coding"
+  elif effect in utr_effects:
+    return "UTR"
+  elif effect in intronic_effects:
+    return "Intronic"
+  elif effect in splicing_effects:
+    return "Splicing"
+  elif effect in intergenic_effects:
+    return "Intergenic/Regulatory"
+  else:
+    return "Other"
+
+df["REGION"] = df["EFFECT"].apply(classify_region)
+
+# Jerarquía de severidad molecular
+effect_priority = {
+  "stop_gained": 1,
+  "frameshift_variant": 2,
+  "splice_acceptor_variant": 3,
+  "splice_donor_variant": 4,
+  "splice_region_variant": 5,
+  "missense_variant": 6,
+  "synonymous_variant": 7,
+  "intron_variant": 8,
+  "upstream_gene_variant": 9,
+  "downstream_gene_variant": 10
+}
+
+# Rank intra-categoría
+df["effect_rank"] = (df["EFFECT"].map(effect_priority).fillna(999))
+
+# Ordenar por atributos, mayor impacto y efecto
+df = df.sort_values(by=[
+  "CHROM",
+  "POS",
+  "REF",
+  "ALT",
+  "impact_rank",
+  "effect_rank"
+  ])
+
+# Una annotación por variante
+df_unique = df.drop_duplicates(subset=["CHROM", "POS", "REF", "ALT"])
+
+# Exportar dataset limpio
+df_unique.to_csv(
+  "data/processed/final_variant_annotations.tsv",
+  sep="\t", index=False
+)
+
+# Conteo por región
+region_summary = (
+  df_unique["REGION"].value_counts().reset_index()
+)
+region_summary.columns = ["REGION", "COUNT"]
+
+# Porcentaje
+region_summary["PERCENT"] = (
+  region_summary["COUNT"] /
+  region_summary["COUNT"].sum()
+) * 100
+
+# Exportar resumen
+region_summary.to_csv(
+  "results/region_summary.tsv",
+  sep="\t", index=False
+)
+
+print("\nResumen por región:")
+print(region_summary)
+
+print(df_unique.head())
+
+print("\nTotal unique variants:")
+print(len(df_unique))
+```
+
+```{python Tabla Distribución por impacto funcional}
+#| eval: false
+
+# Distribución por impacto funcional
+impact_summary = (df_unique["IMPACT"].value_counts().reset_index())
+impact_summary.columns = ["IMPACT", "COUNT"]
+
+# Porcentaje
+impact_summary["PERCENT"] = (
+  impact_summary["COUNT"] /
+  impact_summary["COUNT"].sum()
+) * 100
+
+# Redondear
+impact_summary["PERCENT"] = (
+  impact_summary["PERCENT"]
+  .round(2)
+)
+
+# Exportar
+impact_summary.to_csv(
+  "results/impact_summary.tsv",
+  sep="\t", index=False
+)
+
+print("\nDistribución funcional:")
+print(impact_summary)
+```
+
+```{python Tabla de efectos moleculares}
+#| eval: false
+
+# Efectos moleculares
+effect_summary = (df_unique["EFFECT"].value_counts().reset_index())
+effect_summary.columns = ["EFFECT", "COUNT"]
+
+# Porcentaje
+effect_summary["PERCENT"] = (
+  effect_summary["COUNT"] /
+  effect_summary["COUNT"].sum()
+) * 100
+
+# Redondear
+effect_summary["PERCENT"] = (
+  effect_summary["PERCENT"].round(2)
+)
+
+# Top 10 efectos
+top_effects = effect_summary.head(10)
+
+# Exportar
+top_effects.to_csv(
+  "results/top_effects.tsv",
+  sep="\t", index=False
+)
+
+print("\nTop efectos moleculares:")
+print(top_effects)
+```
+
+## Selección casos de estudio [pendiente definir nombre de la sección]
+
+Para el análisis funcional detallado de casos específicos, se seleccionaron 4 genes representativos asociados a los efectos moleculares más frecuentes identificados en el conjunto de variantes mendelianas patogénicas. La selección se realizó considerando la frecuencia del efecto molecular, la severidad funcional predicha y la diversidad de mecanismos moleculares implicados, bajo los mismos criterios establecidos.
+
+```{python Selección de casos de estudio}
+#| eval: false
+
+# Leer dataset final limpio
+df = pd.read_csv(
+  "data/processed/final_variant_annotations.tsv", sep="\t",
+  dtype={"CHROM": str}, low_memory=False
+)
+
+# Efectos moleculares representativos
+selected_effects = [
+  "frameshift_variant",
+  "stop_gained",
+  "splice_donor_variant",
+  "missense_variant"
+]
+
+# Filtrar efectos seleccionados
+df_selected = (df[df["EFFECT"].isin(selected_effects)])
+
+# Conteo de genes por efecto molecular
+gene_counts = (
+  df_selected
+  .groupby(["EFFECT", "GENE"])
+  .size()
+  .reset_index(name="COUNT")
+  .sort_values(
+    by=["EFFECT", "COUNT"],
+    ascending=[True, False]
+  )
+)
+
+print("\nGenes más frecuentes por efecto:")
+print(gene_counts.head(20))
+
+# Seleccionar genes evitando repeticiones --> Para diversidad
+selected_genes = set()
+selected_rows = []
+
+for effect in selected_effects:
+  # Genes candidatos para el efecto actual
+  candidates = (
+    gene_counts[gene_counts["EFFECT"] == effect]
+    .sort_values(by="COUNT", ascending=False)
+  )
+
+  # Seleccionar primer gen no repetido
+  for _, row in candidates.iterrows():
+    gene = row["GENE"]
+    if gene not in selected_genes:
+      selected_rows.append(row)
+      selected_genes.add(gene)
+      break
+
+# DataFrame final de genes seleccionados
+top_genes = pd.DataFrame(selected_rows)
+
+print("\nGenes seleccionados:")
+print(top_genes)
+
+# Extraer variantes representativas
+selected_variants = []
+
+for _, row in top_genes.iterrows():
+  effect = row["EFFECT"]
+  gene = row["GENE"]
+
+  # Tomar primera variante asociada
+  variant = (
+    df[(df["GENE"] == gene) &
+      (df["EFFECT"] == effect)]
+      .iloc[0]
+  )
+
+  selected_variants.append({
+    "GENE": gene,
+    "EFFECT": effect,
+    "CHROM": variant["CHROM"],
+    "POS": variant["POS"],
+    "REF": variant["REF"],
+    "ALT": variant["ALT"],
+    "IMPACT": variant["IMPACT"]
+  })
+
+# Tabla final de casos de estudio
+selected_variants_df = pd.DataFrame(
+  selected_variants
+)
+
+# Exportar
+selected_variants_df.to_csv(
+  "results/selected_case_studies.tsv",
+  sep="\t", index=False
+)
+
+print("\nCasos de estudio seleccionados:")
+print(selected_variants_df)
+```
+
 # Resultados y discusión
+
+| REGION                | COUNT  | PERCENT   |
+|-----------------------|--------|-----------|
+| Coding                | 107,470| 87.94%    |
+| Splicing              | 12,188 | 9.97%     |
+| Other                 | 1,474  | 1.21%     |
+| Intronic              | 743    | 0.61%     |
+| Intergenic/Regulatory | 304    | 0.25%     |
+| UTR                   | 24     | 0.02%     |
+
+> Tabla 2. Distribución de variantes mendelianas patogénicas únicas, según su ubicación genómica y efectos moleculares asociados. Las regiones se encuentran ordenadas de mayor a menor porcentaje.
+
+```{r Plot distribución por región}
+#| label: fig:regions
+#| fig-cap: "Distribución porcentual de variantes mendelianas patogénicas únicas según su región genómica asociada."
+#| warning: false
+#| message: false
+#| fig-width: 5.5
+#| fig-height: 3.2
+#| out-width: "75%"
+#| fig-align: center
+
+# Leer tabla
+regions <- read.delim("results/region_summary.tsv")
+
+# Ordenar
+regions$REGION <- factor(
+  regions$REGION,
+  levels = regions$REGION
+)
+
+# Paleta gradual manual
+blue_palette <- c(
+  "#1D4E89",
+  "#3267A8",
+  "#4C84C4",
+  "#6AA3D9",
+  "#95C3E8",
+  "#C2DDF2"
+)
+
+# Plot
+ggplot(regions, aes(
+  x = REGION,
+  y = PERCENT,
+  fill = REGION
+)) +
+  
+  # Barras
+  geom_col(
+    width = 0.7
+  ) +
+  
+  # Etiquetas
+  geom_text(
+    aes(label = sprintf("%.2f%%", PERCENT)),
+    vjust = -1,
+    size = 3.5
+  ) +
+  
+  # Colores graduales
+  scale_fill_manual(values = blue_palette) +
+  
+  # Espacio arriba
+  expand_limits(y = max(regions$PERCENT) * 1.1) +
+  
+  # Labels
+  labs(
+    title = "Distribución de variantes por región genómica",
+    x = "Región genómica",
+    y = "Porcentaje (%)"
+  ) +
+  
+  # Tema
+  theme_minimal(base_size = 11) +
+  
+  theme(
+    
+    # Título
+    plot.title = element_text(
+      face = "bold",
+      hjust = 0.5,
+      size = 14
+    ),
+    
+    # Texto eje X
+    axis.text.x = element_text(
+      angle = 20,
+      hjust = 0.6
+    ),
+    
+    # Títulos
+    axis.title.x = element_text(face = "bold"),
+    axis.title.y = element_text(face = "bold"),
+    
+    # Limpiar grid
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    
+    # Quitar leyenda redundante
+    legend.position = "none"
+  )
+```
+
+Tras la anotación funcional se analizaron 122,211 variantes mendelianas patogénicas, reducidas a 122,203 al eliminar duplicados. La mayoría de las variantes (~87.9%) se localizaron en regiones codificantes, mientras que ~10% afectaron regiones asociadas a splicing. Las variantes intrónicas, intergénicas y UTR representaron una proporción considerablemente menor.
+
+| IMPACT   | COUNT  | PERCENT |
+|----------|--------|---------|
+| HIGH     | 100,254| 82.04%  |
+| MODERATE | 19,546 | 15.99%  |
+| LOW      | 1,332  | 1.09%   |
+| MODIFIER | 1,071  | 0.88%   |
+
+> Tabla 3. Distribución de variantes mendelianas patogénicas únicas, según su impacto funcional predicho por SnpEff.
+
+```{r Plot distribución por impacto funcional}
+#| label: fig:impact
+#| fig-cap: "Distribución de variantes mendelianas patogénicas únicas según el impacto funcional predicho por SnpEff."
+#| fig-width: 6
+#| fig-height: 4.5
+#| out-width: "75%"
+#| fig-align: center
+
+# Leer tabla
+impact <- read.delim("results/impact_summary.tsv")
+
+# Ordenar categorías
+impact$IMPACT <- factor(
+  impact$IMPACT,
+  levels = c("HIGH", "MODERATE", "LOW", "MODIFIER")
+)
+
+# Labels con porcentajes
+legend_labels <- sprintf(
+  "%s (%.1f%%)",
+  impact$IMPACT,
+  impact$PERCENT
+)
+
+# Pie / donut chart
+ggplot(impact, aes(x = 2, y = PERCENT, fill = IMPACT)) +
+  
+  geom_col(
+    width = 1,
+    color = "white"
+  ) +
+  
+  coord_polar(theta = "y") +
+  
+  # Límites para crear el "hueco" donut
+  xlim(0.5, 2.5) +
+  
+  # Colores --> Usar misma paleta de azules, decreciendo hasta gris
+  scale_fill_manual(
+    values = c(
+      "HIGH" = "#2874A6",
+      "MODERATE" = "#3498DB",
+      "LOW" = "#91BFDB",
+      "MODIFIER" = "#d7d7d7"
+    ),
+    
+    labels = legend_labels
+  ) +
+  
+  labs(
+    title = "Distribución por impacto funcional",
+    fill = "Impacto funcional"
+  ) +
+  
+  theme_void(base_size = 12) +
+  
+  theme(
+    plot.title = element_text(
+      face = "bold",
+      hjust = 0,
+      size = 14
+    ),
+    
+    legend.title = element_text(face = "bold"),
+    
+    legend.position = "right"
+  )
+```
+
+La gran mayoría de las variantes mendelianas patogénicas únicas (82.0%) se clasificaron con un impacto funcional `HIGH`, lo que sugiere que estas variantes tienen una alta probabilidad de afectar severamente la función proteica. Un porcentaje considerable (16.0%) se clasificó como `MODERATE`, mientras que las categorías `LOW` y `MODIFIER` representaron una proporción menor.
+
+| EFFECT                        | COUNT  | PERCENT |
+|-------------------------------|--------|---------|
+| frameshift_variant             | 56,746 | 46.44%  |
+| stop_gained                   | 32,770 | 26.82%  |
+| missense_variant              | 17,220 | 14.09%  |
+| splice_donor_variant          | 5,600  | 4.58%   |
+| splice_acceptor_variant       | 4,250  | 3.48%   |
+| splice_region_variant         | 2,338  | 1.91%   |
+| intron_variant               | 743    | 0.61%   |
+| disruptive_inframe_deletion  | 543    | 0.44%   |
+| start_lost                   | 533    | 0.44%   |
+| conservative_inframe_deletion | 367    | 0.30%   |
+
+> Tabla 4. Top 10 efectos moleculares más frecuentes entre las variantes mendelianas patogénicas únicas y sus porcentajes asociados, según la anotación funcional de SnpEff.
+
+```{r Plot top efectos moleculares}
+#| label: fig:effects
+#| fig-cap: "Top 10 efectos moleculares más frecuentes identificados en variantes mendelianas patogénicas únicas."
+#| fig-width: 6.2
+#| fig-height: 4.8
+#| out-width: "75%"
+#| fig-align: center
+
+effects <- read.delim(
+  "results/top_effects.tsv"
+)
+
+# Ordenar por abundancia
+effects <- effects[order(effects$COUNT), ]
+
+effects$EFFECT <- factor(
+  effects$EFFECT,
+  levels = effects$EFFECT
+)
+
+# Paleta gradual
+blue_palette <- c(
+  "#deedf6",
+  "#D6EAF8",
+  "#AED6F1",
+  "#85C1E9",
+  "#5DADE2",
+  "#3498DB",
+  "#2E86C1",
+  "#2874A6",
+  "#1F618D",
+  "#154360"
+)
+
+ggplot(
+  effects,
+  aes(
+    x = EFFECT,
+    y = COUNT,
+    fill = EFFECT
+  )
+) +
+  
+  # Barras
+  geom_col(
+    width = 0.7
+  ) +
+  
+  # Labels
+  geom_text(
+    aes(label = COUNT),
+    hjust = -0.15,
+    size = 3.5
+  ) +
+  
+  # Colores graduales
+  scale_fill_manual(values = blue_palette) +
+  
+  # Horizontal
+  coord_flip() +
+  
+  # Espacio extra derecha
+  expand_limits(y = max(effects$COUNT) * 1.03) +
+  
+  # Labels y título
+  labs(
+    title = "Efectos moleculares más frecuentes",
+    x = "Efecto molecular",
+    y = "Número de variantes"
+  ) +
+  
+  # Tema
+  theme_minimal(base_size = 10) +
+  
+  theme(
+    
+    # Título
+    plot.title = element_text(
+      face = "bold",
+      hjust = 0.5,
+      size = 12
+    ),
+    
+    # Ejes
+    axis.title.x = element_text(
+      face = "bold"
+    ),
+    
+    axis.title.y = element_text(
+      face = "bold"
+    ),
+    
+    # Texto categorías (en negritas)
+    axis.text.y = element_text(
+      size = 9, 
+      face = "bold"
+    ),
+    
+    # Quitar grids molestos
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    
+    # Quitar leyenda redundante
+    legend.position = "none"
+  )
+```
+
+La elevada proporción de variantes `frameshift` indica que la pérdida severa de función proteica constituye uno de los principales mecanismos moleculares asociados a enfermedades mendelianas humanas. Esta conjetura se ve reforzada por la alta frecuencia de variantes `stop_gained`, que introducen codones de paro prematuros, y `splice_donor/acceptor_variant`, que alteran el procesamiento del RNA. Por otro lado, aunque las variantes `missense` son relativamente frecuentes, su impacto funcional puede ser más variable y depender del contexto estructural y funcional de la proteína afectada.
+
+En contraste, las variantes intrónicas e intergénicas representaron una proporción considerablemente menor, lo que puede deberse tanto a restricciones funcionales como a sesgos históricos en la interpretación clínica de variantes humanas.
+
+| GENE  | EFFECT              | CHROM | COUNT | POS       | REF | ALT | IMPACT   |
+|-------|---------------------|-------|-------|-----------|-----|-----|----------|
+| BRCA2 | frameshift_variant  | 13    | 2343  | 32316462  | TG  | T   | HIGH     |
+| NF1   | stop_gained        | 17    | 786   | 31095331  | G   | T   | HIGH     |
+| DMD   | splice_donor_variant | X     | 100   | 31147273  | A   | T   | HIGH     |
+| FBN1  | missense_variant   | 15    | 497   | 48411258  | G   | T   | MODERATE |
+
+> Tabla 5. Casos de estudio seleccionados para análisis funcional detallado, con su respectiva información genómica y clasificación de impacto funcional.
+
+[AHONDAR PARA CADA GEN EN SU FUNCIÓN Y MECANISMO PLAUSIBLE CAUSADO POR LA VARIANTE]
+
+# Conclusiones
+
+[PENDIENTE]
+
+---
+
+[DE AQUÍ PA'ABAJO ES LO DE ZYANYA, PERO PUEDE CORTARSE SI SE INTERPRETA LO DE ARRIBA...]
+
+Entre los genes afectados destacaron AGRN, ISG15 y PERM1, previamente asociados a enfermedades mendelianas reportadas en ClinVar y OMIM.
+
+Por ejemplo, en el gen ISG15 se identificó una variante nonsense clasificada como stop_gained:
+
+```         
+p.Gln55*
+```
+
+Esta variante introduce un codón de terminación prematuro capaz de producir una proteína truncada.
+
+Asimismo, múltiples variantes frameshift fueron identificadas en el gen AGRN, alterando el marco de lectura y modificando potencialmente toda la secuencia aminoacídica downstream.
+
+También se detectaron variantes que afectan regiones de splicing, como splice_acceptor_variant en PERM1, las cuales podrían generar transcritos aberrantes y afectar la maduración correcta del ARN mensajero.
+
+En conjunto, los resultados sugieren que gran parte de las variantes mendelianas patogénicas producen alteraciones moleculares severas compatibles con mecanismos clásicos de pérdida de función.
 
 # Referencias

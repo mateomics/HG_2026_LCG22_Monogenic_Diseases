@@ -1,0 +1,669 @@
+% Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  spanish,
+  11pt,
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+  \setmainfont[]{Verdana}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+% Make \paragraph and \subparagraph free-standing
+\makeatletter
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\makeatother
+
+
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+
+
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  % set entry spacing
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+\ifLuaTeX
+\usepackage[bidi=basic]{babel}
+\else
+\usepackage[bidi=default]{babel}
+\fi
+\ifPDFTeX
+\else
+\babelfont{rm}[]{Verdana}
+\fi
+% get rid of language-specific shorthands (see #6817):
+\let\LanguageShortHands\languageshorthands
+\def\languageshorthands#1{}
+
+
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+ 
+
+
+\usepackage{ragged2e}
+\usepackage{indentfirst}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{setspace}
+
+% Interlineado 1.5
+\onehalfspacing
+
+% Sangría
+\setlength{\parindent}{1.25em}
+
+% Sin espacio entre párrafos
+\setlength{\parskip}{0pt}
+
+% Texto justificado
+\justifying
+
+% Figuras en posición fija
+\floatplacement{figure}{H}
+
+% Leyendas estilo "Figura 1:"
+\renewcommand{\figurename}{Figura}
+\renewcommand{\tablename}{Tabla}
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Tabla de contenidos}
+\else
+  \newcommand\contentsname{Tabla de contenidos}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{Listado de Figuras}
+\else
+  \newcommand\listfigurename{Listado de Figuras}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{Listado de Tablas}
+\else
+  \newcommand\listtablename{Listado de Tablas}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figura}
+\else
+  \newcommand\figurename{Figura}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Tabla}
+\else
+  \newcommand\tablename{Tabla}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listado}
+\newcommand*\listoflistings{\listof{codelisting}{Listado de Listados}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdflang={es},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+
+\author{}
+\date{}
+\begin{document}
+
+\begin{titlepage}
+
+    % Logos alineados izquierda y derecha
+    \begin{minipage}{0.45\textwidth}
+        \raggedright
+        \includegraphics[width=7cm]{data/images/Logo_UNAM.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \raggedleft
+        \includegraphics[width=3.4cm]{data/images/Logo_LCG.png}
+    \end{minipage}
+
+    \centering
+    \vspace*{2cm}
+
+    {\Huge\bfseries Proyecto Final Variantes Mendelianas \par}
+    \vspace{2cm}
+
+    {\Large Genómica Humana \par}
+    \vspace{1cm}
+
+    {\Large Equipo 4: Jiménez Mateo, Velázquez Zyanya, Villarruel Andrea \par}
+    \vspace{1cm}
+
+    {\Large 2026-05-25 \par}
+
+    \vfill
+
+\end{titlepage}
+
+
+\section{Introducción}\label{introducciuxf3n}
+
+Las \textbf{enfermedades mendelianas} son trastornos genéticos causados
+principalmente por variantes de alta penetrancia que afectan genes
+individuales {[}CITA PENDIENTE{]}. Muchas de estas variantes producen
+alteraciones severas en la función proteica, incluyendo codones de paro
+prematuros, cambios en el marco de lectura (\emph{frameshift}) y
+alteraciones en el procesamiento del RNA {[}CITA PENDIENTE{]}.
+
+Actualmente, existen bases de datos clínicas como
+\href{https://www.ncbi.nlm.nih.gov/clinvar/}{ClinVar}, que permiten
+obtener tanto variantes humanas asociadas a enfermedades hereditarias,
+como información sobre su relevancia clínica y genes implicados.
+Asimismo, recursos como \href{https://www.omim.org}{OMIM} posibilitan la
+identificación de enfermedades mendelianas y sus genes asociados.
+
+El análisis bioinformático de este tipo de variantes permite estudiar su
+distribución en el genoma y predecir sus posibles consecuencias a nivel
+molecular o incluso fenotípico mediante herramientas de anotación
+funcional {[}IDEALMENTE CITA{]}.
+
+De esta forma, este proyecto realiza el filtrado y anotación funcional
+de aquellas variantes patogénicas asociadas a enfermedades mendelianas
+humanas, utilizando información de ClinVar y OMIM, así como herramientas
+de análisis genómico {[}QUÉ HERRAMIENTAS?{]}.
+
+{[}POSIBLEMENTE AGREGAR INFORMACIÓN SOBRE LA IMPORTANCIA DE ESTE TIPO DE
+ANÁLISIS EN EL CONTEXTO DE LA GENÓMICA HUMANA Y LA MEDICINA
+PERSONALIZADA CON SUS RESPECTIVAS CITAS{]}
+
+\section{Objetivo}\label{objetivo}
+
+Identificar y anotar funcionalmente variantes patogénicas humanas
+asociadas a enfermedades mendelianas a partir de datos de ClinVar y
+OMIM, con el fin de caracterizar sus efectos y analizar su distribución
+genómica.
+
+\section{Metodología}\label{metodologuxeda}
+
+\subsection{Obtención de variantes
+clínicas}\label{obtenciuxf3n-de-variantes-cluxednicas}
+
+Se descargó el archivo
+\href{https://www.ncbi.nlm.nih.gov/clinvar/docs/downloads/}{\texttt{./data/raw/clinvar.vcf.gz}},
+un VCF (\emph{Variant Call Format}) de variantes en humano, desde la
+base de datos de ClinVar. Se utiliza el ensamblaje de referencia GRCh38
+(Hg38), correspondiente al último \emph{release} oficial disponible al
+momento del análisis.
+
+El archivo contiene información sobre la relevancia clínica de cada
+variante en el campo \texttt{INFO}, clasificándolas en función del nivel
+de evidencia disponible para su asociación con alguna enfermedad. Entre
+las categorías reportadas se incluyen: \texttt{VUS} (Variant of
+Uncertain Significance), de significancia incierta;
+\texttt{Likely\ pathogenic}, de moderada; y \texttt{Pathogenic}, de alta
+{[}1{]}.
+
+Por lo anterior y buscando reducir el error tipo I (falsos positivos) en
+análisis posteriores, se optó por extraer únicamente las variantes
+clasificadas como \emph{Pathogenic}.
+
+\subsection{Filtrado de variantes
+mendelianas}\label{filtrado-de-variantes-mendelianas}
+
+A partir de la información clínica contenida en ClinVar y OMIM, se
+identificaron aquellas variantes patogénicas asociadas específicamente a
+enfermedades mendelianas humanas mediante la presencia de
+identificadores \texttt{OMIM} en las anotaciones clínicas.
+
+Las variantes filtradas fueron almacenadas en un archivo tabular y
+posteriormente en un VCF, formato compatible con las herramientas de
+anotación funcional a utilizar.
+
+El conjunto final estuvo compuesto por 122,211 variantes mendelianas
+únicas clasificadas como patogénicas.
+
+\subsection{Anotación y clasificación funcional de
+variantes}\label{anotaciuxf3n-y-clasificaciuxf3n-funcional-de-variantes}
+
+La anotación funcional de las variantes se realizó utilizando el
+\emph{software}
+\href{https://pcingola.github.io/SnpEff/}{\texttt{SnpEff}}, herramienta
+utilizada para predecir el efecto de variantes genéticas sobre genes y
+transcritos. Las variantes fueron clasificadas según su impacto
+funcional en categorías \texttt{HIGH} (alto), \texttt{MODERATE}
+(moderado), \texttt{LOW} (bajo) y \texttt{MODIFIER} (no codificante o
+indirecto), permitiendo identificar aquellas con mayor probabilidad de
+afectar la función proteica {[}2{]}.
+
+Debido a que una misma variante puede afectar múltiples transcritos (por
+\emph{splicing}, diversidad de promotores, etc\ldots), el análisis se
+realizó considerando variantes únicas en aras de evitar potenciales
+redundancias en el conteo de las mismas. De esta forma, las variantes
+fueron agrupadas en función de su posición genómica y alelos de
+referencia/alternativos (\texttt{CHROM}, \texttt{POS}, \texttt{REF},
+\texttt{ALT}).
+
+En aquellos casos con una misma variante asociada a distintas
+anotaciones funcionales, se conservó aquella correspondiente al mayor
+impacto funcional reportado por \texttt{SnpEff} \emph{inter-categoría}
+(\texttt{HIGH} \textgreater{} \texttt{MODERATE} \textgreater{}
+\texttt{LOW} \textgreater{} \texttt{MODIFIER}) y al efecto molecular más
+severo anotado \emph{intra-categoría}, siguiendo el siguiente orden, de
+forma descendente:
+
+\begin{itemize}
+\item
+  \texttt{stop\_gained}: Introducción de un codón de paro prematuro.
+\item
+  \texttt{frameshift\_variant}: Alteración del marco de lectura por un
+  \emph{indel}.
+\item
+  \texttt{splice\_acceptor\_variant}/\texttt{splice\_donor\_variant}:
+  Alteración en el sitio aceptor/donador de splicing.
+\item
+  \texttt{missense\_variant}: Cambio de un aminoácido por otro.
+\item
+  \texttt{synonymous\_variant}: Cambio de un codón sin alterar el
+  aminoácido.
+\item
+  \texttt{intron\_variant}: Alteración en una región intrónica.
+\item
+  \texttt{upstream\_gene\_variant}: Alteración en una región
+  \emph{upstream} del gen.
+\item
+  \texttt{downstream\_gene\_variant}: Alteración en una región
+  \emph{downstream} del gen.
+\end{itemize}
+
+Posteriormente, las variantes fueron agrupadas en categorías generales
+según la ubicación asociada a su efecto molecular, permitiendo evaluar
+su distribución en el genoma humano:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.2211}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.7789}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Región
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Efectos
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Coding & missense\_variant, synonymous\_variant, stop\_gained,
+frameshift\_variant, stop\_lost, start\_lost,
+protein\_altering\_variant, coding\_sequence\_variant \\
+Intronic & intron\_variant \\
+Intergenic/Regulatory & intergenic\_region, upstream\_gene\_variant,
+downstream\_gene\_variant \\
+UTR & 3\_prime\_UTR, 5\_prime\_UTR \\
+Splicing & splice\_acceptor/donor/region \\
+Other & demás \\
+\end{longtable}
+
+\begin{quote}
+Tabla 1. Clasificación de variantes según su ubicación genómica y
+efectos moleculares asociados.
+\end{quote}
+
+\subsection{Selección casos de estudio {[}pendiente definir nombre de la
+sección{]}}\label{selecciuxf3n-casos-de-estudio-pendiente-definir-nombre-de-la-secciuxf3n}
+
+Para el análisis funcional detallado de casos específicos, se
+seleccionaron 4 genes representativos asociados a los efectos
+moleculares más frecuentes identificados en el conjunto de variantes
+mendelianas patogénicas. La selección se realizó considerando la
+frecuencia del efecto molecular, la severidad funcional predicha y la
+diversidad de mecanismos moleculares implicados, bajo los mismos
+criterios establecidos.
+
+\section{Resultados y discusión}\label{resultados-y-discusiuxf3n}
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+REGION & COUNT & PERCENT \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Coding & 107,470 & 87.94\% \\
+Splicing & 12,188 & 9.97\% \\
+Other & 1,474 & 1.21\% \\
+Intronic & 743 & 0.61\% \\
+Intergenic/Regulatory & 304 & 0.25\% \\
+UTR & 24 & 0.02\% \\
+\end{longtable}
+
+\begin{quote}
+Tabla 2. Distribución de variantes mendelianas patogénicas únicas, según
+su ubicación genómica y efectos moleculares asociados. Las regiones se
+encuentran ordenadas de mayor a menor porcentaje.
+\end{quote}
+
+\begin{figure}[H]
+
+{\centering \includegraphics[width=0.75\linewidth,height=\textheight,keepaspectratio]{ProyectoFinal_Escrito_Equipo4_files/figure-pdf/fig-regions-1.pdf}
+
+}
+
+\caption{Distribución porcentual de variantes mendelianas patogénicas
+únicas según su región genómica asociada.}
+
+\end{figure}%
+
+Tras la anotación funcional se analizaron 122,211 variantes mendelianas
+patogénicas, reducidas a 122,203 al eliminar duplicados. La mayoría de
+las variantes (\textasciitilde87.9\%) se localizaron en regiones
+codificantes, mientras que \textasciitilde10\% afectaron regiones
+asociadas a splicing. Las variantes intrónicas, intergénicas y UTR
+representaron una proporción considerablemente menor.
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+IMPACT & COUNT & PERCENT \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+HIGH & 100,254 & 82.04\% \\
+MODERATE & 19,546 & 15.99\% \\
+LOW & 1,332 & 1.09\% \\
+MODIFIER & 1,071 & 0.88\% \\
+\end{longtable}
+
+\begin{quote}
+Tabla 3. Distribución de variantes mendelianas patogénicas únicas, según
+su impacto funcional predicho por SnpEff.
+\end{quote}
+
+\begin{figure}[H]
+
+{\centering \includegraphics[width=0.75\linewidth,height=\textheight,keepaspectratio]{ProyectoFinal_Escrito_Equipo4_files/figure-pdf/fig-impact-1.pdf}
+
+}
+
+\caption{Distribución de variantes mendelianas patogénicas únicas según
+el impacto funcional predicho por SnpEff.}
+
+\end{figure}%
+
+La gran mayoría de las variantes mendelianas patogénicas únicas (82.0\%)
+se clasificaron con un impacto funcional \texttt{HIGH}, lo que sugiere
+que estas variantes tienen una alta probabilidad de afectar severamente
+la función proteica. Un porcentaje considerable (16.0\%) se clasificó
+como \texttt{MODERATE}, mientras que las categorías \texttt{LOW} y
+\texttt{MODIFIER} representaron una proporción menor.
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+EFFECT & COUNT & PERCENT \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+frameshift\_variant & 56,746 & 46.44\% \\
+stop\_gained & 32,770 & 26.82\% \\
+missense\_variant & 17,220 & 14.09\% \\
+splice\_donor\_variant & 5,600 & 4.58\% \\
+splice\_acceptor\_variant & 4,250 & 3.48\% \\
+splice\_region\_variant & 2,338 & 1.91\% \\
+intron\_variant & 743 & 0.61\% \\
+disruptive\_inframe\_deletion & 543 & 0.44\% \\
+start\_lost & 533 & 0.44\% \\
+conservative\_inframe\_deletion & 367 & 0.30\% \\
+\end{longtable}
+
+\begin{quote}
+Tabla 4. Top 10 efectos moleculares más frecuentes entre las variantes
+mendelianas patogénicas únicas y sus porcentajes asociados, según la
+anotación funcional de SnpEff.
+\end{quote}
+
+\begin{figure}[H]
+
+{\centering \includegraphics[width=0.75\linewidth,height=\textheight,keepaspectratio]{ProyectoFinal_Escrito_Equipo4_files/figure-pdf/fig-effects-1.pdf}
+
+}
+
+\caption{Top 10 efectos moleculares más frecuentes identificados en
+variantes mendelianas patogénicas únicas.}
+
+\end{figure}%
+
+La elevada proporción de variantes \texttt{frameshift} indica que la
+pérdida severa de función proteica constituye uno de los principales
+mecanismos moleculares asociados a enfermedades mendelianas humanas.
+Esta conjetura se ve reforzada por la alta frecuencia de variantes
+\texttt{stop\_gained}, que introducen codones de paro prematuros, y
+\texttt{splice\_donor/acceptor\_variant}, que alteran el procesamiento
+del RNA. Por otro lado, aunque las variantes \texttt{missense} son
+relativamente frecuentes, su impacto funcional puede ser más variable y
+depender del contexto estructural y funcional de la proteína afectada.
+
+En contraste, las variantes intrónicas e intergénicas representaron una
+proporción considerablemente menor, lo que puede deberse tanto a
+restricciones funcionales como a sesgos históricos en la interpretación
+clínica de variantes humanas.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0959}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.2877}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0959}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0959}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1507}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0685}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0685}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1370}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+GENE
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+EFFECT
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+CHROM
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+COUNT
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+POS
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+REF
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+ALT
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+IMPACT
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+BRCA2 & frameshift\_variant & 13 & 2343 & 32316462 & TG & T & HIGH \\
+NF1 & stop\_gained & 17 & 786 & 31095331 & G & T & HIGH \\
+DMD & splice\_donor\_variant & X & 100 & 31147273 & A & T & HIGH \\
+FBN1 & missense\_variant & 15 & 497 & 48411258 & G & T & MODERATE \\
+\end{longtable}
+
+\begin{quote}
+Tabla 5. Casos de estudio seleccionados para análisis funcional
+detallado, con su respectiva información genómica y clasificación de
+impacto funcional.
+\end{quote}
+
+{[}AHONDAR PARA CADA GEN EN SU FUNCIÓN Y MECANISMO PLAUSIBLE CAUSADO POR
+LA VARIANTE{]}
+
+\section{Conclusiones}\label{conclusiones}
+
+{[}PENDIENTE{]}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+{[}DE AQUÍ PA'ABAJO ES LO DE ZYANYA, PERO PUEDE CORTARSE SI SE
+INTERPRETA LO DE ARRIBA\ldots{]}
+
+Entre los genes afectados destacaron AGRN, ISG15 y PERM1, previamente
+asociados a enfermedades mendelianas reportadas en ClinVar y OMIM.
+
+Por ejemplo, en el gen ISG15 se identificó una variante nonsense
+clasificada como stop\_gained:
+
+\begin{verbatim}
+p.Gln55*
+\end{verbatim}
+
+Esta variante introduce un codón de terminación prematuro capaz de
+producir una proteína truncada.
+
+Asimismo, múltiples variantes frameshift fueron identificadas en el gen
+AGRN, alterando el marco de lectura y modificando potencialmente toda la
+secuencia aminoacídica downstream.
+
+También se detectaron variantes que afectan regiones de splicing, como
+splice\_acceptor\_variant en PERM1, las cuales podrían generar
+transcritos aberrantes y afectar la maduración correcta del ARN
+mensajero.
+
+En conjunto, los resultados sugieren que gran parte de las variantes
+mendelianas patogénicas producen alteraciones moleculares severas
+compatibles con mecanismos clásicos de pérdida de función.
+
+\section*{Referencias}\label{referencias}
+\addcontentsline{toc}{section}{Referencias}
+
+\phantomsection\label{refs}
+\begin{CSLReferences}{0}{1}
+\bibitem[\citeproctext]{ref-landrum-2013}
+\CSLLeftMargin{1. }%
+\CSLRightInline{Melissa J. Landrum, Jennifer M. Lee, George R. Riley,
+Wonhee Jang, Wendy S. Rubinstein, Deanna M. Church, Donna R. Maglott.
+{ClinVar: public archive of relationships among sequence variation and
+human phenotype}. Nucleic Acids Research. noviembre de
+2013;42(D1):D980-5.
+doi:\href{https://doi.org/10.1093/nar/gkt1113}{10.1093/nar/gkt1113}}
+
+\bibitem[\citeproctext]{ref-cingolani-2012}
+\CSLLeftMargin{2. }%
+\CSLRightInline{Pablo Cingolani, Adrian Platts, Le Lily Wang, Melissa
+Coon, Tung Nguyen, Luan Wang, Susan J. Land, Xiangyi Lu, Douglas M.
+Ruden. {A program for annotating and predicting the effects of single
+nucleotide polymorphisms, SnpEff}. Fly. abril de 2012;6(2):80-92.
+doi:\href{https://doi.org/10.4161/fly.19695}{10.4161/fly.19695}}
+
+\end{CSLReferences}
+
+
+
+
+\end{document}

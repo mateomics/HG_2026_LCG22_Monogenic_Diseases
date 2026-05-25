@@ -1,0 +1,11 @@
+EFFECT	COUNT	PERCENT
+frameshift_variant	56746	46.44
+stop_gained	32770	26.82
+missense_variant	17220	14.09
+splice_donor_variant	5600	4.58
+splice_acceptor_variant	4250	3.48
+splice_region_variant	2338	1.91
+intron_variant	743	0.61
+disruptive_inframe_deletion	543	0.44
+start_lost	533	0.44
+conservative_inframe_deletion	367	0.3

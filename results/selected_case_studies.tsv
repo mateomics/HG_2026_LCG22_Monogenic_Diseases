@@ -1,0 +1,5 @@
+GENE	EFFECT	CHROM	POS	REF	ALT	IMPACT
+BRCA2	frameshift_variant	13	32316462	TG	T	HIGH
+NF1	stop_gained	17	31095331	G	T	HIGH
+DMD	splice_donor_variant	X	31147273	A	T	HIGH
+FBN1	missense_variant	15	48411258	G	T	MODERATE
