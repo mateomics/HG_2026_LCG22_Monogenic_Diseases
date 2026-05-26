@@ -23,6 +23,16 @@ format:
         \usepackage{float}
         \usepackage{graphicx}
         \usepackage{setspace}
+        \usepackage{fancyhdr}
+
+        % Configuración de estilo de página
+        \pagestyle{fancy}
+        \fancyhf{} % Limpiar encabezados y pies
+        \renewcommand{\headrulewidth}{0pt} % Sin línea
+        
+        % Definir el encabezado solo para la primera página
+        \fancyhead[R]{ Jimenéz Mateo \\ Velázquez Zyanya \\ Villarruel Andrea}
+        
 
         % Interlineado 1.5
         \onehalfspacing
@@ -62,6 +72,8 @@ execute:
 
 editor: visual
 ---
+```{=latex}
+\thispagestyle{fancy}
 
 ```{r Setup de Python}
 #| echo: false
