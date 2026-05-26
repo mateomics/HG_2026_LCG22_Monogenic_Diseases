@@ -112,16 +112,11 @@ En aquellos casos con una misma variante asociada a distintas anotaciones funcio
 
 Posteriormente, las variantes fueron agrupadas en categorías generales según la ubicación asociada a su efecto molecular, permitiendo evaluar su distribución en el genoma humano:
 
-| Región | Efectos |
-|------------------|------------------------------------------------------|
-| Coding | missense_variant, synonymous_variant, stop_gained, frameshift_variant, stop_lost, start_lost, protein_altering_variant, coding_sequence_variant |
-| Intronic | intron_variant |
-| Intergenic/Regulatory | intergenic_region, upstream_gene_variant, downstream_gene_variant |
-| UTR | 3_prime_UTR, 5_prime_UTR |
-| Splicing | splice_acceptor/donor/region |
-| Other | demás |
+::: {#tbl-regiones tbl-pos="H"}
+![](data/images/tabla_1.png){width=55%}
 
-> Tabla 1. Clasificación de variantes según su ubicación genómica y efectos moleculares asociados.
+Clasificación de variantes según su ubicación genómica y efectos moleculares asociados.
+:::
 
 ```{python Parseo de anotaciones SnpEff}
 #| eval: false
@@ -383,14 +378,11 @@ print(top_effects)
 
 Para el análisis funcional detallado de casos específicos, se seleccionaron 4 genes representativos asociados a los efectos moleculares más frecuentes identificados en el conjunto de variantes mendelianas patogénicas. La selección se realizó considerando la frecuencia del efecto molecular, la severidad funcional predicha y la diversidad de mecanismos moleculares implicados, bajo los mismos criterios establecidos.
 
-| GENE  | EFFECT               | CHROM | COUNT | POS      | REF | ALT | IMPACT   |
-|-------|----------------------|-------|-------|----------|-----|-----|----------|
-| BRCA2 | frameshift_variant   | 13    | 2343  | 32316462 | TG  | T   | HIGH     |
-| NF1   | stop_gained          | 17    | 786   | 31095331 | G   | T   | HIGH     |
-| DMD   | splice_donor_variant | X     | 100   | 31147273 | A   | T   | HIGH     |
-| FBN1  | missense_variant     | 15    | 497   | 48411258 | G   | T   | MODERATE |
+::: {#tbl-regiones tbl-pos="H"}
+![](data/images/tabla_2.png){width=55%}
 
-> Tabla 2. Casos de estudio seleccionados para análisis funcional detallado, con su respectiva información genómica y clasificación de impacto funcional.
+Casos de estudio seleccionados para análisis funcional detallado, con su respectiva información genómica y clasificación de impacto funcional..
+:::
 
 ```{python Selección de casos de estudio}
 #| eval: false
@@ -590,16 +582,14 @@ ggplot(regions, aes(
 
 Por otro lado, vemos que la gran mayoría de las variantes mendelianas patogénicas únicas (82.0%) se clasificaron con un impacto funcional `HIGH`, lo que sugiere que estas variantes tienen una alta probabilidad de afectar severamente la función proteica. Un porcentaje considerable (16.0%) se clasificó como `MODERATE`, mientras que las categorías `LOW` y `MODIFIER` representaron una proporción menor.
 
-| IMPACT   | COUNT   | PERCENT |
-|----------|---------|---------|
-| HIGH     | 100,254 | 82.04%  |
-| MODERATE | 19,546  | 15.99%  |
-| LOW      | 1,332   | 1.09%   |
-| MODIFIER | 1,071   | 0.88%   |
+::: {#tbl-regiones tbl-pos="H"}
+![](data/images/tabla_3.png){width=35%}
 
-> Tabla 3. Distribución de variantes mendelianas patogénicas únicas, según su impacto funcional predicho por SnpEff.
+Distribución de variantes mendelianas patogénicas únicas, según su impacto funcional predicho por SnpEff.
+:::
 
-```{r Plot distribución por impacto funcional, eval = false}
+```{r Plot distribución por impacto funcional}
+#| eval: false
 #| label: fig:impact
 #| fig-cap: "Distribución de variantes mendelianas patogénicas únicas según el impacto funcional predicho por SnpEff."
 #| fig-width: 6
@@ -672,22 +662,14 @@ Además, la elevada proporción de variantes `frameshift` indica que la pérdida
 
 En contraste, las variantes intrónicas e intergénicas representaron una proporción considerablemente menor, lo que puede deberse tanto a restricciones funcionales como a sesgos históricos en la interpretación clínica de variantes humanas.
 
-| EFFECT                        | COUNT  | PERCENT |
-|-------------------------------|--------|---------|
-| frameshift_variant            | 56,746 | 46.44%  |
-| stop_gained                   | 32,770 | 26.82%  |
-| missense_variant              | 17,220 | 14.09%  |
-| splice_donor_variant          | 5,600  | 4.58%   |
-| splice_acceptor_variant       | 4,250  | 3.48%   |
-| splice_region_variant         | 2,338  | 1.91%   |
-| intron_variant                | 743    | 0.61%   |
-| disruptive_inframe_deletion   | 543    | 0.44%   |
-| start_lost                    | 533    | 0.44%   |
-| conservative_inframe_deletion | 367    | 0.30%   |
+::: {#tbl-regiones tbl-pos="H"}
+![](data/images/tabla_4.png){width=35%}
 
-> Tabla 4. Top 10 efectos moleculares más frecuentes entre las variantes mendelianas patogénicas únicas y sus porcentajes asociados, según la anotación funcional de SnpEff.
+Top 10 efectos moleculares más frecuentes entre las variantes mendelianas patogénicas únicas y sus porcentajes asociados, según la anotación funcional de SnpEff.
+:::
 
-```{r Plot top efectos moleculares, eval = false}
+```{r Plot top efectos moleculares}
+#| eval: false
 #| label: fig:effects
 #| fig-cap: "Top 10 efectos moleculares más frecuentes identificados en variantes mendelianas patogénicas únicas."
 #| fig-width: 6.2
