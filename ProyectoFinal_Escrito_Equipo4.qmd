@@ -1,4 +1,5 @@
 ---
+#engine: jupyter
 lang: es
 
 crossref:
@@ -28,7 +29,7 @@ format:
         % Configuración de estilo de página
         \fancyhf{} 
         \renewcommand{\headrulewidth}{0pt}
-        \fancyhead[R]{Jimenéz Mateo \\ Velázquez Zyanya \\ Villarruel Andrea
+        \fancyhead[R]{Jimenéz Mateo \\ Velázquez Zyanya \\ Villarruel Andrea}
        
         % Interlineado 1.5
         \onehalfspacing
@@ -121,7 +122,7 @@ En aquellos casos con una misma variante asociada a distintas anotaciones funcio
 Posteriormente, las variantes fueron agrupadas en categorías generales según la ubicación asociada a su efecto molecular, permitiendo evaluar su distribución en el genoma humano:
 
 ::: {#tbl-regiones tbl-pos="H"}
-![](data/images/tabla_1.png){width=55%}
+![](data/images/tabla_1_equivalencias.png){width=60%}
 
 Clasificación de variantes según su ubicación genómica y efectos moleculares asociados.
 :::
@@ -386,12 +387,6 @@ print(top_effects)
 
 Para el análisis funcional detallado de casos específicos, se seleccionaron 4 genes representativos asociados a los efectos moleculares más frecuentes identificados en el conjunto de variantes mendelianas patogénicas. La selección se realizó considerando la frecuencia del efecto molecular, la severidad funcional predicha y la diversidad de mecanismos moleculares implicados, bajo los mismos criterios establecidos.
 
-::: {#tbl-regiones tbl-pos="H"}
-![](data/images/tabla_2.png){width=55%}
-
-Casos de estudio seleccionados para análisis funcional detallado, con su respectiva información genómica y clasificación de impacto funcional..
-:::
-
 ```{python Selección de casos de estudio}
 #| eval: false
 
@@ -494,8 +489,6 @@ print(selected_variants_df)
 
 # Resultados y discusión
 
-Tras la anotación funcional se analizaron 122,211 variantes mendelianas patogénicas, reducidas a 122,203 al eliminar duplicados. Observamos que el 107,470 (\~87.9%) se localizaron en regiones codificantes, mientras que 12,188 (~10.0%) afectaron regiones asociadas a splicing. Las variantes intrónicas (743 counts), intergénicas (304 counts) y UTR (24 counts) representaron una proporción considerablemente menor.
-
 ```{r Plot distribución por región}
 #| label: fig:regions
 #| fig-cap: "Distribución porcentual de variantes mendelianas patogénicas únicas según su región genómica asociada."
@@ -539,17 +532,29 @@ ggplot(regions, aes(
   
   # Etiquetas
   geom_text(
-    aes(label = sprintf("%.2f%%", PERCENT)),
-    vjust = -1,
-    size = 3.5
+    aes(
+      label = paste0(
+        sprintf("%.2f%%", PERCENT),
+        "\n(",
+        format(COUNT, big.mark = ",", trim = TRUE),
+        ")"
+      )
+    ),
+    vjust = -0.4,
+    size = 3.2,
+    lineheight = 0.9
   ) +
   
   # Colores graduales
   scale_fill_manual(values = blue_palette) +
   
   # Espacio arriba
-  expand_limits(y = max(regions$PERCENT) * 1.1) +
-  
+  scale_y_continuous(
+    limits = c(
+      0,
+      max(regions$PERCENT) * 1.15
+    )
+  ) +
   # Labels
   labs(
     title = "Distribución de variantes por región genómica",
@@ -565,7 +570,7 @@ ggplot(regions, aes(
     # Título
     plot.title = element_text(
       face = "bold",
-      hjust = 0.5,
+      hjust = 0.3,
       size = 14
     ),
     
@@ -588,13 +593,17 @@ ggplot(regions, aes(
   )
 ```
 
-Por otro lado, vemos que la gran mayoría de las variantes mendelianas patogénicas únicas (82.0%) se clasificaron con un impacto funcional `HIGH`, lo que sugiere que estas variantes tienen una alta probabilidad de afectar severamente la función proteica. Un porcentaje considerable (16.0%) se clasificó como `MODERATE`, mientras que las categorías `LOW` y `MODIFIER` representaron una proporción menor.
+Tras la anotación funcional se analizaron 122,211 variantes mendelianas patogénicas, reducidas a 122,203 al eliminar duplicados. Observamos que el 107,470 (\~87.9%) se localizaron en regiones codificantes, mientras que 12,188 (~10.0%) afectaron regiones asociadas a splicing. Las variantes intrónicas (743 counts), intergénicas (304 counts) y UTR (24 counts) representaron una proporción considerablemente menor.
 
-::: {#tbl-regiones tbl-pos="H"}
-![](data/images/tabla_3.png){width=35%}
+::: {#fig-impact fig-align="center"}
 
-Distribución de variantes mendelianas patogénicas únicas, según su impacto funcional predicho por SnpEff.
+![](data/images/fig_2_3_impact_molecular_function.png){width=100%}
+
+Características de las variantes patogénicas mendelianas únicas obtenidas: A) Distribución de variantes mendelianas patogénicas únicas según su impacto funcional predicho por SnpEff. B) Top 10 efectos moleculares más frecuentes entre las variantes mendelianas patogénicas únicas y sus porcentajes asociados según la anotación funcional de SnpEff. Se reportan tanto conteos absolutos como porcentajes.
+
 :::
+
+Por otro lado, se observa que la gran mayoría de las variantes mendelianas patogénicas únicas (82.0%) se clasifican con un impacto funcional `HIGH`, lo que sugiere que tienen una alta probabilidad de afectar severamente la función proteica. Un porcentaje considerable (16.0%) se clasificó como `MODERATE`, mientras que las categorías `LOW` y `MODIFIER` representaron una proporción menor.
 
 ```{r Plot distribución por impacto funcional}
 #| eval: false
@@ -656,7 +665,7 @@ ggplot(impact, aes(x = 2, y = PERCENT, fill = IMPACT)) +
   theme(
     plot.title = element_text(
       face = "bold",
-      hjust = 0,
+      hjust = 1,
       size = 14
     ),
     
@@ -669,12 +678,6 @@ ggplot(impact, aes(x = 2, y = PERCENT, fill = IMPACT)) +
 Además, la elevada proporción de variantes `frameshift` indica que la pérdida severa de función proteica constituye uno de los principales mecanismos moleculares asociados a enfermedades mendelianas humanas. Esta conjetura se ve reforzada por la alta frecuencia de variantes `stop_gained`, que introducen codones de paro prematuros, y `splice_donor/acceptor_variant`, que alteran el procesamiento del RNA. Por otro lado, aunque las variantes `missense` son relativamente frecuentes, su impacto funcional puede ser más variable y depender del contexto estructural y funcional de la proteína afectada.
 
 En contraste, las variantes intrónicas e intergénicas representaron una proporción considerablemente menor, lo que puede deberse tanto a restricciones funcionales como a sesgos históricos en la interpretación clínica de variantes humanas.
-
-::: {#tbl-regiones tbl-pos="H"}
-![](data/images/tabla_4.png){width=35%}
-
-Top 10 efectos moleculares más frecuentes entre las variantes mendelianas patogénicas únicas y sus porcentajes asociados, según la anotación funcional de SnpEff.
-:::
 
 ```{r Plot top efectos moleculares}
 #| eval: false
@@ -784,20 +787,34 @@ ggplot(
   )
 ```
 
+De esta manera, la distribución observada no solo describe la localización genómica de las variantes, sino que orienta la interpretación de sus posibles consecuencias funcionales. Dado que los efectos más frecuentes corresponden a variantes *frameshift*, de pérdida de función, *missense* y alteraciones del *splicing*, se seleccionaron de forma determinista genes representativos de cada mecanismo para analizarlos con mayor detalle:
 
-Por lo tanto, la distribución observada no solo describe la localización genómica de las variantes, sino que también orienta la interpretación de sus posibles consecuencias funcionales. Dado que los efectos más frecuentes corresponden a variantes frameshift, stop_gained, missense y alteraciones del splicing, se seleccionaron genes representativos de cada mecanismo para analizarlos con mayor detalle: 
+::: {#tbl-regiones tbl-pos="H"}
+![](data/images/tabla_2_casos.png){width=80%}
 
-**BRCA2** codifica la proteína Breast Cancer Type 2 susceptibility protein, una proteína supresora tumoral esencial para el mantenimiento de la estabilidad genómica. Su función principal se relaciona con la reparación de rupturas de doble cadena del ADN mediante recombinación homóloga, así como con la protección de las horquillas de replicación. Para cumplir estas funciones, BRCA2 contiene regiones importantes de interacción con proteínas como PALB2, EMSY y RAD51, además de dominios asociados a la unión al ADN, repeticiones BRC, pliegues de unión a oligonucleótidos, señales de localización nuclear y sitios de regulación por fosforilación. Estas regiones permiten que BRCA2 participe en el reclutamiento de RAD51 hacia los sitios de daño en el ADN y favorezca una reparación precisa del material genético [@ncbigene675]. La variante seleccionada en este gen corresponde a una mutación de tipo frameshift, la cual altera el marco de lectura de la secuencia codificante. Como consecuencia, podría generarse una secuencia de aminoácidos aberrante, una proteína truncada no funcional o incluso la degradación del mRNA mediante mecanismos de vigilancia celular.
+Casos de estudio seleccionados para análisis funcional detallado, con su respectiva información genómica y clasificación de impacto funcional.
+:::
 
-En términos funcionales, esta alteración podría causar una pérdida de función de BRCA2 al eliminar o modificar regiones necesarias para la interacción con RAD51, la unión al ADN o la localización nuclear de la proteína. La pérdida de actividad de BRCA2 comprometería la reparación del ADN por recombinación homóloga, favoreciendo la acumulación de daño genómico, inestabilidad cromosómica y predisposición tumoral [@uniprotp51587]. Este mecanismo permite explicar su asociación con enfermedades mendelianas como la anemia de Fanconi tipo D1, en contexto bialélico autosómico recesivo, y con el síndrome de cáncer de mama y ovario hereditario, en contexto autosómico dominante con penetrancia incompleta [@petrucelli2026;@prepelita2024].
+**BRCA2** codifica la proteína Breast Cancer Type 2 susceptibility protein, una proteína supresora tumoral esencial para el mantenimiento de la estabilidad genómica. Su función principal se relaciona con la reparación de rupturas de doble cadena del DNA mediante recombinación homóloga, así como con la protección de las horquillas de replicación. Para cumplir estas funciones, BRCA2 contiene regiones importantes de interacción con proteínas como PALB2, EMSY y RAD51, además de dominios asociados a la unión al DNA, repeticiones BRC, pliegues de unión a oligonucleótidos, señales de localización nuclear y sitios de regulación por fosforilación.
+
+Estas regiones permiten que BRCA2 participe en el reclutamiento de RAD51 hacia los sitios de daño en el DNA y favorezca una reparación precisa del material genético [@ncbigene675]. La variante seleccionada en este gen corresponde a una mutación de tipo frameshift, la cual altera el marco de lectura de la secuencia codificante. Como consecuencia, podría generarse una secuencia de aminoácidos aberrante, una proteína truncada no funcional o incluso la degradación del mRNA mediante mecanismos de vigilancia celular.
+
+En términos funcionales, esta alteración podría causar una pérdida de función de BRCA2 al eliminar o modificar regiones necesarias para la interacción con RAD51, la unión al DNA o la localización nuclear de la proteína. La pérdida de actividad de BRCA2 comprometería la reparación del DNA por recombinación homóloga, favoreciendo la acumulación de daño genómico, inestabilidad cromosómica y predisposición tumoral [@uniprotp51587]. Este mecanismo permite explicar su asociación con enfermedades mendelianas como la anemia de Fanconi tipo D1, en contexto bialélico autosómico recesivo, y con el síndrome de cáncer de mama y ovario hereditario, en contexto autosómico dominante con penetrancia incompleta [@petrucelli2026;@prepelita2024].
+
+Por otro lado, **NF1** codifica la proteína neurofibromina, una proteína supresora tumoral que participa en la regulación negativa de la vía RAS. En condiciones normales, la neurofibromina estimula la actividad GTPasa de Ras, favoreciendo la conversión de Ras-GTP activo a Ras-GDP inactivo; de esta manera, limita la señalización celular asociada con proliferación, crecimiento y supervivencia celular [@uniprotp21359]. La variante seleccionada en este gen corresponde a una mutación de tipo stop_gained, la cual introduce un codón de parada prematuro en la secuencia codificante. Como consecuencia, podría generarse una proteína truncada no funcional o inducirse la degradación del mRNA mediante mecanismos de vigilancia celular.
+
+En términos funcionales, esta alteración podría causar una pérdida de función de neurofibromina, especialmente si el truncamiento afecta o elimina regiones importantes como el dominio relacionado con GAP, necesario para regular la actividad de Ras. La pérdida de neurofibromina impediría la inactivación adecuada de Ras, favoreciendo una señalización proliferativa sostenida. Este mecanismo molecular permite explicar su asociación con la neurofibromatosis tipo 1, una enfermedad mendeliana de herencia autosómica dominante caracterizada por alteraciones en la pigmentación de la piel, crecimiento de neurofibromas y mayor predisposición al desarrollo de tumores del tejido nervioso [@munakomi2023neurofibromatosis].
 
 
-Por otro lado, **NF1** codifica la proteína neurofibromina, una proteína supresora tumoral que participa en la regulación negativa de la vía RAS. En condiciones normales, la neurofibromina estimula la actividad GTPasa de Ras, favoreciendo la conversión de Ras-GTP activo a Ras-GDP inactivo; de esta manera, limita la señalización celular asociada con proliferación, crecimiento y supervivencia celular [@uniprotp21359]. La variante seleccionada en este gen corresponde a una mutación de tipo stop_gained, la cual introduce un codón de parada prematuro en la secuencia codificante. Como consecuencia, podría generarse una proteína truncada no funcional o inducirse la degradación del mRNA mediante mecanismos de vigilancia celular. En términos funcionales, esta alteración podría causar una pérdida de función de neurofibromina, especialmente si el truncamiento afecta o elimina regiones importantes como el dominio relacionado con GAP, necesario para regular la actividad de Ras. La pérdida de neurofibromina impediría la inactivación adecuada de Ras, favoreciendo una señalización proliferativa sostenida. Este mecanismo molecular permite explicar su asociación con la neurofibromatosis tipo 1, una enfermedad mendeliana de herencia autosómica dominante caracterizada por alteraciones en la pigmentación de la piel, crecimiento de neurofibromas y mayor predisposición al desarrollo de tumores del tejido nervioso [@munakomi2023neurofibromatosis].
+EN cuanto a **DMD** codifica la proteína distrofina, una proteína estructural esencial para la estabilidad de las fibras musculares. Este gen es uno de los más grandes del genoma humano y su producto proteico participa en la conexión entre el citoesqueleto de actina y la matriz extracelular mediante el complejo distrofina-glicoproteína. Gracias a esta función, la distrofina contribuye a estabilizar el sarcolema durante la contracción muscular y también participa en procesos de señalización celular y transmisión sináptica [@uniprotA0A087WTU7]. La variante seleccionada en este gen corresponde a una mutación de tipo splice_donor_variant, la cual puede alterar el corte y empalme normal del pre-mRNA. Como consecuencia, podrían generarse eventos anómalos de splicing, como exclusión de exones, retención intrónica o cambios en el marco de lectura, lo que podría producir una distrofina truncada, inestable o completamente ausente.
 
+Dependiendo del exón afectado, podrían perderse dominios importantes para la unión a actina, el dominio central tipo rod o regiones necesarias para la interacción con el complejo distrofina-glicoproteína. En términos funcionales, esta alteración podría causar una pérdida de función de la distrofina, debilitando la conexión entre el citoesqueleto y la matriz extracelular. Como resultado, el sarcolema se volvería más susceptible al daño mecánico durante la contracción muscular, favoreciendo la degeneración progresiva de las fibras musculares [@Davydenko2024.01.31.578175]. Este mecanismo permite explicar la asociación de variantes en DMD con distrofinopatías ligadas al cromosoma X, como la distrofia muscular de Duchenne, la distrofia muscular de Becker y la cardiomiopatía dilatada asociada a DMD [@darras2022dystrophinopathies].
 
-EN cuanto a **DMD** codifica la proteína distrofina, una proteína estructural esencial para la estabilidad de las fibras musculares. Este gen es uno de los más grandes del genoma humano y su producto proteico participa en la conexión entre el citoesqueleto de actina y la matriz extracelular mediante el complejo distrofina-glicoproteína. Gracias a esta función, la distrofina contribuye a estabilizar el sarcolema durante la contracción muscular y también participa en procesos de señalización celular y transmisión sináptica [@uniprotA0A087WTU7]. La variante seleccionada en este gen corresponde a una mutación de tipo splice_donor_variant, la cual puede alterar el corte y empalme normal del pre-mRNA. Como consecuencia, podrían generarse eventos anómalos de splicing, como exclusión de exones, retención intrónica o cambios en el marco de lectura, lo que podría producir una distrofina truncada, inestable o completamente ausente. Dependiendo del exón afectado, podrían perderse dominios importantes para la unión a actina, el dominio central tipo rod o regiones necesarias para la interacción con el complejo distrofina-glicoproteína. En términos funcionales, esta alteración podría causar una pérdida de función de la distrofina, debilitando la conexión entre el citoesqueleto y la matriz extracelular. Como resultado, el sarcolema se volvería más susceptible al daño mecánico durante la contracción muscular, favoreciendo la degeneración progresiva de las fibras musculares [@Davydenko2024.01.31.578175]. Este mecanismo permite explicar la asociación de variantes en DMD con distrofinopatías ligadas al cromosoma X, como la distrofia muscular de Duchenne, la distrofia muscular de Becker y la cardiomiopatía dilatada asociada a DMD [@darras2022dystrophinopathies].
+Finalmente, **FBN1** codifica la proteína fibrilina-1, un componente esencial de la matriz extracelular que participa en la formación de microfibrillas. Estas microfibrillas proporcionan soporte estructural, elasticidad y resistencia tensil a los tejidos conectivos, ya sea funcionando como andamio para la deposición de elastina o como redes independientes de soporte. Además de su función mecánica, fibrilina-1 cumple un papel regulador importante en la homeostasis tisular, ya que puede interactuar con integrinas y modular la biodisponibilidad de factores de crecimiento como TGF-$\beta$ y BMP, los cuales participan en procesos como crecimiento óseo, diferenciación celular y organización del tejido conectivo [@uniprotp35555; @medlineplusfbn1].
 
-Finalmente, **FBN1** codifica la proteína fibrilina-1, un componente esencial de la matriz extracelular que participa en la formación de microfibrillas. Estas microfibrillas proporcionan soporte estructural, elasticidad y resistencia tensil a los tejidos conectivos, ya sea funcionando como andamio para la deposición de elastina o como redes independientes de soporte. Además de su función mecánica, fibrilina-1 cumple un papel regulador importante en la homeostasis tisular, ya que puede interactuar con integrinas y modular la biodisponibilidad de factores de crecimiento como TGF-$\beta$ y BMP, los cuales participan en procesos como crecimiento óseo, diferenciación celular y organización del tejido conectivo [@uniprotp35555; @medlineplusfbn1]. La variante seleccionada en este gen corresponde a una mutación de tipo missense, en la cual un cambio puntual en el ADN produce la sustitución de un aminoácido en la proteína. El efecto funcional de este tipo de variante depende de la importancia estructural o funcional del residuo afectado y de su ubicación dentro de la proteína. En el caso de FBN1, la sustitución podría alterar dominios relevantes para el plegamiento, la estabilidad o el ensamblaje de microfibrillas, como dominios tipo EGF-like o dominios de unión a calcio. Como consecuencia, la proteína mutante podría presentar una pérdida parcial de función o ejercer un efecto dominante negativo, interfiriendo con la organización normal de la matriz extracelular. Esta alteración también podría modificar la regulación de factores de crecimiento, especialmente TGF-$\beta$, contribuyendo a defectos en la integridad y señalización del tejido conectivo [@olivieri2010fibrillin]. Este mecanismo permite explicar la asociación de variantes en FBN1 con fibrilinopatías de herencia autosómica dominante, entre ellas el síndrome de Marfan, caracterizado por manifestaciones cardiovasculares, esqueléticas y oculares, así como otros fenotipos relacionados como síndrome MASS, ectopia lentis aislada, displasia geleofísica, acromicria o síndrome de piel rígida [@dietz2026marfan;@zeyer2015fibrillin].
+La variante seleccionada en este gen corresponde a una mutación de tipo missense, en la cual un cambio puntual en el DNA produce la sustitución de un aminoácido en la proteína. El efecto funcional de este tipo de variante depende de la importancia estructural o funcional del residuo afectado y de su ubicación dentro de la proteína. En el caso de FBN1, la sustitución podría alterar dominios relevantes para el plegamiento, la estabilidad o el ensamblaje de microfibrillas, como dominios tipo EGF-like o dominios de unión a calcio. Como consecuencia, la proteína mutante podría presentar una pérdida parcial de función o ejercer un efecto dominante negativo, interfiriendo con la organización normal de la matriz extracelular.
+
+Esta alteración también podría modificar la regulación de factores de crecimiento, especialmente TGF-$\beta$, contribuyendo a defectos en la integridad y señalización del tejido conectivo [@olivieri2010fibrillin]. Este mecanismo permite explicar la asociación de variantes en FBN1 con fibrilinopatías de herencia autosómica dominante, entre ellas el síndrome de Marfan, caracterizado por manifestaciones cardiovasculares, esqueléticas y oculares, así como otros fenotipos relacionados como síndrome MASS, ectopia lentis aislada, displasia geleofísica, acromicria o síndrome de piel rígida [@dietz2026marfan;@zeyer2015fibrillin].
 
 En conjunto, todos estos resultados muestran que las variantes patogénicas asociadas a enfermedades mendelianas se concentran principalmente en regiones codificantes, lo que concuerda con el hecho de que muchas de estas enfermedades son causadas por alteraciones de alta penetrancia que afectan directamente la proteína codificada. La alta frecuencia de variantes frameshift, stop_gained, missense y de splicing sugiere que los mecanismos más relevantes incluyen pérdida de función, generación de proteínas truncadas, cambios en aminoácidos importantes o alteraciones en el procesamiento del RNA. 
 
@@ -809,5 +826,6 @@ La pregunta central del proyecto fue determinar qué porcentaje de estas mutacio
 
 Estos resultados sugieren que una proporción importante de las enfermedades mendelianas analizadas se relaciona con variantes que afectan directamente la secuencia proteica o el procesamiento del RNA. En consecuencia, los principales mecanismos funcionales identificados incluyen pérdida de función, truncamiento proteico, alteración de dominios funcionales y cambios en la estabilidad o actividad de la proteína. En conclusión, la integración de bases de datos clínicas, anotación bioinformática y análisis funcional permitió relacionar la localización genómica de las variantes con sus posibles consecuencias moleculares y fenotípicas.
 
+\newpage
 
 # Referencias
