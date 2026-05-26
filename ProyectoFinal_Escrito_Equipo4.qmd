@@ -84,15 +84,11 @@ library(cowplot)
 
 # Introducción
 
-Las **enfermedades mendelianas** son trastornos genéticos causados principalmente por variantes de alta penetrancia que afectan genes individuales [CITA PENDIENTE]. Muchas de estas variantes producen alteraciones severas en la función proteica, incluyendo codones de paro prematuros, cambios en el marco de lectura (*frameshift*) y alteraciones en el procesamiento del RNA [CITA PENDIENTE].
+Las **enfermedades mendelianas** son trastornos genéticos causados principalmente por variantes de alta penetrancia en genes individuales, cuya alteración puede modificar la estructura, estabilidad o actividad de la proteína codificada. Algunos efectos moleculares son la introducción de codones de paro prematuros, cambios en el marco de lectura (*frameshift*), alteraciones del *splicing* y sustituciones de aminoácidos, las cuales pueden contribuir al desarrollo de fenotipos patológicos mediante pérdida o alteración de la función génica [@nussbaum2023thompson]. 
 
 Actualmente, existen bases de datos clínicas como [ClinVar](https://www.ncbi.nlm.nih.gov/clinvar/){.underline}, que permiten obtener tanto variantes humanas asociadas a enfermedades hereditarias, como información sobre su relevancia clínica y genes implicados. Asimismo, recursos como [OMIM](https://www.omim.org){.underline} posibilitan la identificación de enfermedades mendelianas y sus genes asociados.
 
-El análisis bioinformático de este tipo de variantes permite estudiar su distribución en el genoma y predecir sus posibles consecuencias a nivel molecular o incluso fenotípico mediante herramientas de anotación funcional [IDEALMENTE CITA].
-
-De esta forma, este proyecto realiza el filtrado y anotación funcional de aquellas variantes patogénicas asociadas a enfermedades mendelianas humanas, utilizando información de ClinVar y OMIM, así como herramientas de análisis genómico [QUÉ HERRAMIENTAS?].
-
-[POSIBLEMENTE AGREGAR INFORMACIÓN SOBRE LA IMPORTANCIA DE ESTE TIPO DE ANÁLISIS EN EL CONTEXTO DE LA GENÓMICA HUMANA Y LA MEDICINA PERSONALIZADA CON SUS RESPECTIVAS CITAS]
+El análisis bioinformático de variantes permite clasificarlas de acuerdo con su localización genómica y su posible efecto funcional. En este proyecto se utilizaron variantes patogénicas de ClinVar asociadas a enfermedades mendelianas mediante identificadores OMIM y se anotaron con [`SnpEff`](https://pcingola.github.io/SnpEff/){.underline}, una herramienta que predice efectos de variantes sobre genes, transcritos y proteínas [@cingolani-2012]. Con ello, se buscó determinar qué proporción de variantes se localiza en regiones codificantes, intrónicas e intergénicas/regulatorias, así como interpretar sus posibles consecuencias moleculares y fenotípicas.
 
 # Objetivo
 
@@ -100,56 +96,30 @@ Identificar y anotar funcionalmente variantes patogénicas humanas asociadas a e
 
 # Metodología
 
-## Obtención de variantes clínicas
+## Obtención y filtrado de variantes 
 
-Se descargó el archivo [`./data/raw/clinvar.vcf.gz`](https://www.ncbi.nlm.nih.gov/clinvar/docs/downloads/), un VCF (*Variant Call Format*) de variantes en humano, desde la base de datos de ClinVar. Se utiliza el ensamblaje de referencia GRCh38 (Hg38), correspondiente al último *release* oficial disponible al momento del análisis. 
+Se descargó de ClinVar el archivo [`clinvar.vcf.gz`](https://www.ncbi.nlm.nih.gov/clinvar/docs/downloads/) correspondiente al ensamblaje humano GRCh38 (último *release* oficial). A partir de este archivo se seleccionaron únicamente variantes clasificadas como `Pathogenic`, con el fin de trabajar con variantes con mayor evidencia clínica de asociación a enfermedad [@landrum-2013].
 
-El archivo contiene información sobre la relevancia clínica de cada variante en el campo `INFO`, clasificándolas en función del nivel de evidencia disponible para su asociación con alguna enfermedad. Entre las categorías reportadas se incluyen: `VUS` (Variant of Uncertain Significance), de significancia incierta; `Likely pathogenic`, de moderada; y `Pathogenic`, de alta [@landrum-2013].
-
-Por lo anterior y buscando reducir el error tipo I (falsos positivos) en análisis posteriores, se optó por extraer únicamente las variantes clasificadas como *Pathogenic*.
-
-## Filtrado de variantes mendelianas
-
-A partir de la información clínica contenida en ClinVar y OMIM, se identificaron aquellas variantes patogénicas asociadas específicamente a enfermedades mendelianas humanas mediante la presencia de identificadores `OMIM` en las anotaciones clínicas.
-
-Las variantes filtradas fueron almacenadas en un archivo tabular y posteriormente en un VCF, formato compatible con las herramientas de anotación funcional a utilizar.
-
-El conjunto final estuvo compuesto por 122,211 variantes mendelianas únicas clasificadas como patogénicas.
+Posteriormente, se filtraron las variantes asociadas a enfermedades mendelianas mediante la presencia de identificadores `OMIM` en las anotaciones clínicas. El conjunto final estuvo compuesto por 122,211 variantes patogénicas asociadas a enfermedades mendelianas y fueron almacenadas en un archivo tabular y posteriormente en un VCF, formato compatible con las herramientas de anotación funcional a utilizar.
 
 ## Anotación y clasificación funcional de variantes
 
-La anotación funcional de las variantes se realizó utilizando el *software* [`SnpEff`](https://pcingola.github.io/SnpEff/){.underline}, herramienta utilizada para predecir el efecto de variantes genéticas sobre genes y transcritos. Las variantes fueron clasificadas según su impacto funcional en categorías `HIGH` (alto), `MODERATE` (moderado), `LOW` (bajo) y `MODIFIER` (no codificante o indirecto), permitiendo identificar aquellas con mayor probabilidad de afectar la función proteica [@cingolani-2012].
+La anotación funcional se realizó con [`SnpEff`](https://pcingola.github.io/SnpEff/){.underline}. Las variantes fueron clasificadas según su impacto funcional en las categorías `HIGH`, `MODERATE`, `LOW` y `MODIFIER`, lo que permitió priorizar aquellas con mayor probabilidad de alterar la función proteica [@cingolani-2012].
 
-Debido a que una misma variante puede afectar múltiples transcritos (por *splicing*, diversidad de promotores, etc...), el análisis se realizó considerando variantes únicas en aras de evitar potenciales redundancias en el conteo de las mismas. De esta forma, las variantes fueron agrupadas en función de su posición genómica y alelos de referencia/alternativos (`CHROM`, `POS`, `REF`, `ALT`).
+Debido a que una misma variante puede afectar múltiples transcritos, el análisis se realizó considerando variantes únicas para evitar potenciales redundancias en el conteo de las mismas. De esta forma, las variantes fueron agrupadas en función de su posición genómica y alelos de referencia/alternativos (`CHROM`, `POS`, `REF`, `ALT`).
 
-En aquellos casos con una misma variante asociada a distintas anotaciones funcionales, se conservó aquella correspondiente al mayor impacto funcional reportado por `SnpEff` *inter-categoría* (`HIGH` > `MODERATE` > `LOW` > `MODIFIER`) y al efecto molecular más severo anotado *intra-categoría*, siguiendo el siguiente orden, de forma descendente:
-
-- `stop_gained`: Introducción de un codón de paro prematuro.
-
-- `frameshift_variant`: Alteración del marco de lectura por un *indel*.
-
-- `splice_acceptor_variant`/`splice_donor_variant`: Alteración en el sitio aceptor/donador de splicing.
-
-- `missense_variant`: Cambio de un aminoácido por otro.
-
-- `synonymous_variant`: Cambio de un codón sin alterar el aminoácido.
-
-- `intron_variant`: Alteración en una región intrónica.
-
-- `upstream_gene_variant`: Alteración en una región *upstream* del gen.
-
-- `downstream_gene_variant`: Alteración en una región *downstream* del gen.
+En aquellos casos con una misma variante asociada a distintas anotaciones funcionales, se conservó aquella correspondiente al mayor impacto funcional reportado por `SnpEff` *inter-categoría* (`HIGH` \> `MODERATE` \> `LOW` \> `MODIFIER`) y al efecto molecular más severo anotado *intra-categoría*, siguiendo el siguiente orden, de forma descendente: `stop_gained`, `frameshift_variant`, `splice_acceptor_variant`/`splice_donor_variant`, `missense_variant`, `synonymous_variant`, `intron_variant`: Alteración en una región intrónica, `upstream_gene_variant` y `downstream_gene_variant`. 
 
 Posteriormente, las variantes fueron agrupadas en categorías generales según la ubicación asociada a su efecto molecular, permitiendo evaluar su distribución en el genoma humano:
 
-| Región              | Efectos                                                                 |
-|---------------------|--------------------------------------------------------------------------|
-| Coding              | missense_variant, synonymous_variant, stop_gained, frameshift_variant, stop_lost, start_lost, protein_altering_variant, coding_sequence_variant |
-| Intronic            | intron_variant                                                                 |
+| Región | Efectos |
+|------------------|------------------------------------------------------|
+| Coding | missense_variant, synonymous_variant, stop_gained, frameshift_variant, stop_lost, start_lost, protein_altering_variant, coding_sequence_variant |
+| Intronic | intron_variant |
 | Intergenic/Regulatory | intergenic_region, upstream_gene_variant, downstream_gene_variant |
-| UTR                 | 3_prime_UTR, 5_prime_UTR                                                   |
-| Splicing            | splice_acceptor/donor/region                                                   |
-| Other               | demás                                                                 |
+| UTR | 3_prime_UTR, 5_prime_UTR |
+| Splicing | splice_acceptor/donor/region |
+| Other | demás |
 
 > Tabla 1. Clasificación de variantes según su ubicación genómica y efectos moleculares asociados.
 
@@ -407,9 +377,20 @@ print("\nTop efectos moleculares:")
 print(top_effects)
 ```
 
-## Selección casos de estudio [pendiente definir nombre de la sección]
+## Análisis funcional 
+
+### Selección de casos de estudio
 
 Para el análisis funcional detallado de casos específicos, se seleccionaron 4 genes representativos asociados a los efectos moleculares más frecuentes identificados en el conjunto de variantes mendelianas patogénicas. La selección se realizó considerando la frecuencia del efecto molecular, la severidad funcional predicha y la diversidad de mecanismos moleculares implicados, bajo los mismos criterios establecidos.
+
+| GENE  | EFFECT               | CHROM | COUNT | POS      | REF | ALT | IMPACT   |
+|-------|----------------------|-------|-------|----------|-----|-----|----------|
+| BRCA2 | frameshift_variant   | 13    | 2343  | 32316462 | TG  | T   | HIGH     |
+| NF1   | stop_gained          | 17    | 786   | 31095331 | G   | T   | HIGH     |
+| DMD   | splice_donor_variant | X     | 100   | 31147273 | A   | T   | HIGH     |
+| FBN1  | missense_variant     | 15    | 497   | 48411258 | G   | T   | MODERATE |
+
+> Tabla 2. Casos de estudio seleccionados para análisis funcional detallado, con su respectiva información genómica y clasificación de impacto funcional.
 
 ```{python Selección de casos de estudio}
 #| eval: false
@@ -510,18 +491,10 @@ print("\nCasos de estudio seleccionados:")
 print(selected_variants_df)
 ```
 
+
 # Resultados y discusión
 
-| REGION                | COUNT  | PERCENT   |
-|-----------------------|--------|-----------|
-| Coding                | 107,470| 87.94%    |
-| Splicing              | 12,188 | 9.97%     |
-| Other                 | 1,474  | 1.21%     |
-| Intronic              | 743    | 0.61%     |
-| Intergenic/Regulatory | 304    | 0.25%     |
-| UTR                   | 24     | 0.02%     |
-
-> Tabla 2. Distribución de variantes mendelianas patogénicas únicas, según su ubicación genómica y efectos moleculares asociados. Las regiones se encuentran ordenadas de mayor a menor porcentaje.
+Tras la anotación funcional se analizaron 122,211 variantes mendelianas patogénicas, reducidas a 122,203 al eliminar duplicados. Observamos que el 107,470 (\~87.9%) se localizaron en regiones codificantes, mientras que 12,188 (~10.0%) afectaron regiones asociadas a splicing. Las variantes intrónicas (743 counts), intergénicas (304 counts) y UTR (24 counts) representaron una proporción considerablemente menor.
 
 ```{r Plot distribución por región}
 #| label: fig:regions
@@ -615,18 +588,18 @@ ggplot(regions, aes(
   )
 ```
 
-Tras la anotación funcional se analizaron 122,211 variantes mendelianas patogénicas, reducidas a 122,203 al eliminar duplicados. La mayoría de las variantes (~87.9%) se localizaron en regiones codificantes, mientras que ~10% afectaron regiones asociadas a splicing. Las variantes intrónicas, intergénicas y UTR representaron una proporción considerablemente menor.
+Por otro lado, vemos que la gran mayoría de las variantes mendelianas patogénicas únicas (82.0%) se clasificaron con un impacto funcional `HIGH`, lo que sugiere que estas variantes tienen una alta probabilidad de afectar severamente la función proteica. Un porcentaje considerable (16.0%) se clasificó como `MODERATE`, mientras que las categorías `LOW` y `MODIFIER` representaron una proporción menor.
 
-| IMPACT   | COUNT  | PERCENT |
-|----------|--------|---------|
-| HIGH     | 100,254| 82.04%  |
-| MODERATE | 19,546 | 15.99%  |
-| LOW      | 1,332  | 1.09%   |
-| MODIFIER | 1,071  | 0.88%   |
+| IMPACT   | COUNT   | PERCENT |
+|----------|---------|---------|
+| HIGH     | 100,254 | 82.04%  |
+| MODERATE | 19,546  | 15.99%  |
+| LOW      | 1,332   | 1.09%   |
+| MODIFIER | 1,071   | 0.88%   |
 
 > Tabla 3. Distribución de variantes mendelianas patogénicas únicas, según su impacto funcional predicho por SnpEff.
 
-```{r Plot distribución por impacto funcional}
+```{r Plot distribución por impacto funcional, eval = false}
 #| label: fig:impact
 #| fig-cap: "Distribución de variantes mendelianas patogénicas únicas según el impacto funcional predicho por SnpEff."
 #| fig-width: 6
@@ -695,24 +668,26 @@ ggplot(impact, aes(x = 2, y = PERCENT, fill = IMPACT)) +
   )
 ```
 
-La gran mayoría de las variantes mendelianas patogénicas únicas (82.0%) se clasificaron con un impacto funcional `HIGH`, lo que sugiere que estas variantes tienen una alta probabilidad de afectar severamente la función proteica. Un porcentaje considerable (16.0%) se clasificó como `MODERATE`, mientras que las categorías `LOW` y `MODIFIER` representaron una proporción menor.
+Además, la elevada proporción de variantes `frameshift` indica que la pérdida severa de función proteica constituye uno de los principales mecanismos moleculares asociados a enfermedades mendelianas humanas. Esta conjetura se ve reforzada por la alta frecuencia de variantes `stop_gained`, que introducen codones de paro prematuros, y `splice_donor/acceptor_variant`, que alteran el procesamiento del RNA. Por otro lado, aunque las variantes `missense` son relativamente frecuentes, su impacto funcional puede ser más variable y depender del contexto estructural y funcional de la proteína afectada.
+
+En contraste, las variantes intrónicas e intergénicas representaron una proporción considerablemente menor, lo que puede deberse tanto a restricciones funcionales como a sesgos históricos en la interpretación clínica de variantes humanas.
 
 | EFFECT                        | COUNT  | PERCENT |
 |-------------------------------|--------|---------|
-| frameshift_variant             | 56,746 | 46.44%  |
+| frameshift_variant            | 56,746 | 46.44%  |
 | stop_gained                   | 32,770 | 26.82%  |
 | missense_variant              | 17,220 | 14.09%  |
 | splice_donor_variant          | 5,600  | 4.58%   |
 | splice_acceptor_variant       | 4,250  | 3.48%   |
 | splice_region_variant         | 2,338  | 1.91%   |
-| intron_variant               | 743    | 0.61%   |
-| disruptive_inframe_deletion  | 543    | 0.44%   |
-| start_lost                   | 533    | 0.44%   |
+| intron_variant                | 743    | 0.61%   |
+| disruptive_inframe_deletion   | 543    | 0.44%   |
+| start_lost                    | 533    | 0.44%   |
 | conservative_inframe_deletion | 367    | 0.30%   |
 
 > Tabla 4. Top 10 efectos moleculares más frecuentes entre las variantes mendelianas patogénicas únicas y sus porcentajes asociados, según la anotación funcional de SnpEff.
 
-```{r Plot top efectos moleculares}
+```{r Plot top efectos moleculares, eval = false}
 #| label: fig:effects
 #| fig-cap: "Top 10 efectos moleculares más frecuentes identificados en variantes mendelianas patogénicas únicas."
 #| fig-width: 6.2
@@ -819,43 +794,30 @@ ggplot(
   )
 ```
 
-La elevada proporción de variantes `frameshift` indica que la pérdida severa de función proteica constituye uno de los principales mecanismos moleculares asociados a enfermedades mendelianas humanas. Esta conjetura se ve reforzada por la alta frecuencia de variantes `stop_gained`, que introducen codones de paro prematuros, y `splice_donor/acceptor_variant`, que alteran el procesamiento del RNA. Por otro lado, aunque las variantes `missense` son relativamente frecuentes, su impacto funcional puede ser más variable y depender del contexto estructural y funcional de la proteína afectada.
 
-En contraste, las variantes intrónicas e intergénicas representaron una proporción considerablemente menor, lo que puede deberse tanto a restricciones funcionales como a sesgos históricos en la interpretación clínica de variantes humanas.
+Por lo tanto, la distribución observada no solo describe la localización genómica de las variantes, sino que también orienta la interpretación de sus posibles consecuencias funcionales. Dado que los efectos más frecuentes corresponden a variantes frameshift, stop_gained, missense y alteraciones del splicing, se seleccionaron genes representativos de cada mecanismo para analizarlos con mayor detalle: 
 
-| GENE  | EFFECT              | CHROM | COUNT | POS       | REF | ALT | IMPACT   |
-|-------|---------------------|-------|-------|-----------|-----|-----|----------|
-| BRCA2 | frameshift_variant  | 13    | 2343  | 32316462  | TG  | T   | HIGH     |
-| NF1   | stop_gained        | 17    | 786   | 31095331  | G   | T   | HIGH     |
-| DMD   | splice_donor_variant | X     | 100   | 31147273  | A   | T   | HIGH     |
-| FBN1  | missense_variant   | 15    | 497   | 48411258  | G   | T   | MODERATE |
+**BRCA2** codifica la proteína Breast Cancer Type 2 susceptibility protein, una proteína supresora tumoral esencial para el mantenimiento de la estabilidad genómica. Su función principal se relaciona con la reparación de rupturas de doble cadena del ADN mediante recombinación homóloga, así como con la protección de las horquillas de replicación. Para cumplir estas funciones, BRCA2 contiene regiones importantes de interacción con proteínas como PALB2, EMSY y RAD51, además de dominios asociados a la unión al ADN, repeticiones BRC, pliegues de unión a oligonucleótidos, señales de localización nuclear y sitios de regulación por fosforilación. Estas regiones permiten que BRCA2 participe en el reclutamiento de RAD51 hacia los sitios de daño en el ADN y favorezca una reparación precisa del material genético [@ncbigene675]. La variante seleccionada en este gen corresponde a una mutación de tipo frameshift, la cual altera el marco de lectura de la secuencia codificante. Como consecuencia, podría generarse una secuencia de aminoácidos aberrante, una proteína truncada no funcional o incluso la degradación del mRNA mediante mecanismos de vigilancia celular.
 
-> Tabla 5. Casos de estudio seleccionados para análisis funcional detallado, con su respectiva información genómica y clasificación de impacto funcional.
+En términos funcionales, esta alteración podría causar una pérdida de función de BRCA2 al eliminar o modificar regiones necesarias para la interacción con RAD51, la unión al ADN o la localización nuclear de la proteína. La pérdida de actividad de BRCA2 comprometería la reparación del ADN por recombinación homóloga, favoreciendo la acumulación de daño genómico, inestabilidad cromosómica y predisposición tumoral [@uniprotp51587]. Este mecanismo permite explicar su asociación con enfermedades mendelianas como la anemia de Fanconi tipo D1, en contexto bialélico autosómico recesivo, y con el síndrome de cáncer de mama y ovario hereditario, en contexto autosómico dominante con penetrancia incompleta [@petrucelli2026;@prepelita2024].
 
-[AHONDAR PARA CADA GEN EN SU FUNCIÓN Y MECANISMO PLAUSIBLE CAUSADO POR LA VARIANTE]
+
+Por otro lado, **NF1** codifica la proteína neurofibromina, una proteína supresora tumoral que participa en la regulación negativa de la vía RAS. En condiciones normales, la neurofibromina estimula la actividad GTPasa de Ras, favoreciendo la conversión de Ras-GTP activo a Ras-GDP inactivo; de esta manera, limita la señalización celular asociada con proliferación, crecimiento y supervivencia celular [@uniprotp21359]. La variante seleccionada en este gen corresponde a una mutación de tipo stop_gained, la cual introduce un codón de parada prematuro en la secuencia codificante. Como consecuencia, podría generarse una proteína truncada no funcional o inducirse la degradación del mRNA mediante mecanismos de vigilancia celular. En términos funcionales, esta alteración podría causar una pérdida de función de neurofibromina, especialmente si el truncamiento afecta o elimina regiones importantes como el dominio relacionado con GAP, necesario para regular la actividad de Ras. La pérdida de neurofibromina impediría la inactivación adecuada de Ras, favoreciendo una señalización proliferativa sostenida. Este mecanismo molecular permite explicar su asociación con la neurofibromatosis tipo 1, una enfermedad mendeliana de herencia autosómica dominante caracterizada por alteraciones en la pigmentación de la piel, crecimiento de neurofibromas y mayor predisposición al desarrollo de tumores del tejido nervioso [@munakomi2023neurofibromatosis].
+
+
+EN cuanto a **DMD** codifica la proteína distrofina, una proteína estructural esencial para la estabilidad de las fibras musculares. Este gen es uno de los más grandes del genoma humano y su producto proteico participa en la conexión entre el citoesqueleto de actina y la matriz extracelular mediante el complejo distrofina-glicoproteína. Gracias a esta función, la distrofina contribuye a estabilizar el sarcolema durante la contracción muscular y también participa en procesos de señalización celular y transmisión sináptica [@uniprotA0A087WTU7]. La variante seleccionada en este gen corresponde a una mutación de tipo splice_donor_variant, la cual puede alterar el corte y empalme normal del pre-mRNA. Como consecuencia, podrían generarse eventos anómalos de splicing, como exclusión de exones, retención intrónica o cambios en el marco de lectura, lo que podría producir una distrofina truncada, inestable o completamente ausente. Dependiendo del exón afectado, podrían perderse dominios importantes para la unión a actina, el dominio central tipo rod o regiones necesarias para la interacción con el complejo distrofina-glicoproteína. En términos funcionales, esta alteración podría causar una pérdida de función de la distrofina, debilitando la conexión entre el citoesqueleto y la matriz extracelular. Como resultado, el sarcolema se volvería más susceptible al daño mecánico durante la contracción muscular, favoreciendo la degeneración progresiva de las fibras musculares [@Davydenko2024.01.31.578175]. Este mecanismo permite explicar la asociación de variantes en DMD con distrofinopatías ligadas al cromosoma X, como la distrofia muscular de Duchenne, la distrofia muscular de Becker y la cardiomiopatía dilatada asociada a DMD [@darras2022dystrophinopathies].
+
+Finalmente, **FBN1** codifica la proteína fibrilina-1, un componente esencial de la matriz extracelular que participa en la formación de microfibrillas. Estas microfibrillas proporcionan soporte estructural, elasticidad y resistencia tensil a los tejidos conectivos, ya sea funcionando como andamio para la deposición de elastina o como redes independientes de soporte. Además de su función mecánica, fibrilina-1 cumple un papel regulador importante en la homeostasis tisular, ya que puede interactuar con integrinas y modular la biodisponibilidad de factores de crecimiento como TGF-$\beta$ y BMP, los cuales participan en procesos como crecimiento óseo, diferenciación celular y organización del tejido conectivo [@uniprotp35555; @medlineplusfbn1]. La variante seleccionada en este gen corresponde a una mutación de tipo missense, en la cual un cambio puntual en el ADN produce la sustitución de un aminoácido en la proteína. El efecto funcional de este tipo de variante depende de la importancia estructural o funcional del residuo afectado y de su ubicación dentro de la proteína. En el caso de FBN1, la sustitución podría alterar dominios relevantes para el plegamiento, la estabilidad o el ensamblaje de microfibrillas, como dominios tipo EGF-like o dominios de unión a calcio. Como consecuencia, la proteína mutante podría presentar una pérdida parcial de función o ejercer un efecto dominante negativo, interfiriendo con la organización normal de la matriz extracelular. Esta alteración también podría modificar la regulación de factores de crecimiento, especialmente TGF-$\beta$, contribuyendo a defectos en la integridad y señalización del tejido conectivo [@olivieri2010fibrillin]. Este mecanismo permite explicar la asociación de variantes en FBN1 con fibrilinopatías de herencia autosómica dominante, entre ellas el síndrome de Marfan, caracterizado por manifestaciones cardiovasculares, esqueléticas y oculares, así como otros fenotipos relacionados como síndrome MASS, ectopia lentis aislada, displasia geleofísica, acromicria o síndrome de piel rígida [@dietz2026marfan;@zeyer2015fibrillin].
+
+En conjunto, todos estos resultados muestran que las variantes patogénicas asociadas a enfermedades mendelianas se concentran principalmente en regiones codificantes, lo que concuerda con el hecho de que muchas de estas enfermedades son causadas por alteraciones de alta penetrancia que afectan directamente la proteína codificada. La alta frecuencia de variantes frameshift, stop_gained, missense y de splicing sugiere que los mecanismos más relevantes incluyen pérdida de función, generación de proteínas truncadas, cambios en aminoácidos importantes o alteraciones en el procesamiento del RNA. 
+
+Aunque las variantes intrónicas, intergénicas/regulatorias y UTR fueron menos frecuentes, no deben descartarse como funcionalmente irrelevantes. Su baja proporción puede reflejar tanto una menor frecuencia real como sesgos en la interpretación clínica, ya que las variantes codificantes suelen ser más fáciles de anotar y asociar con enfermedad. Por ello, el análisis de regiones no codificantes sigue siendo importante para comprender de manera más completa la base genética de las enfermedades mendelianas.
 
 # Conclusiones
 
-[PENDIENTE]
+La pregunta central del proyecto fue determinar qué porcentaje de estas mutaciones se encuentra en regiones codificantes, intrónicas e intergénicas. Los resultados mostraron que aproximadamente el 87.9% de las variantes se localizó en regiones codificantes, mientras que las variantes intrónicas representaron alrededor del 0.61%. Las variantes intergénicas/regulatorias y UTR constituyeron una fracción menor, mientras que cerca del 10% se asoció con regiones de splicing.
 
----
+Estos resultados sugieren que una proporción importante de las enfermedades mendelianas analizadas se relaciona con variantes que afectan directamente la secuencia proteica o el procesamiento del RNA. En consecuencia, los principales mecanismos funcionales identificados incluyen pérdida de función, truncamiento proteico, alteración de dominios funcionales y cambios en la estabilidad o actividad de la proteína. En conclusión, la integración de bases de datos clínicas, anotación bioinformática y análisis funcional permitió relacionar la localización genómica de las variantes con sus posibles consecuencias moleculares y fenotípicas.
 
-[DE AQUÍ PA'ABAJO ES LO DE ZYANYA, PERO PUEDE CORTARSE SI SE INTERPRETA LO DE ARRIBA...]
-
-Entre los genes afectados destacaron AGRN, ISG15 y PERM1, previamente asociados a enfermedades mendelianas reportadas en ClinVar y OMIM.
-
-Por ejemplo, en el gen ISG15 se identificó una variante nonsense clasificada como stop_gained:
-
-```         
-p.Gln55*
-```
-
-Esta variante introduce un codón de terminación prematuro capaz de producir una proteína truncada.
-
-Asimismo, múltiples variantes frameshift fueron identificadas en el gen AGRN, alterando el marco de lectura y modificando potencialmente toda la secuencia aminoacídica downstream.
-
-También se detectaron variantes que afectan regiones de splicing, como splice_acceptor_variant en PERM1, las cuales podrían generar transcritos aberrantes y afectar la maduración correcta del ARN mensajero.
-
-En conjunto, los resultados sugieren que gran parte de las variantes mendelianas patogénicas producen alteraciones moleculares severas compatibles con mecanismos clásicos de pérdida de función.
 
 # Referencias
